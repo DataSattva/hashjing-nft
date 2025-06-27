@@ -1,0 +1,6 @@
+# Remix / Hardhat / Foundry build outputs
+artifacts/
+utils/artefacts
+cache/*
+.deps/*
+.states/*
