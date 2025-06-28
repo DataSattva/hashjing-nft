@@ -1,6 +1,29 @@
-# Remix / Hardhat / Foundry build outputs
-artifacts/
-utils/artefacts
-cache/*
-.deps/*
-.states/*
+# ───────── Node / npm ─────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-lock.yaml
+
+# ───────── Hardhat build artefacts ─────────
+artifacts/               # compiled bytecode + ABI
+cache/                   # compiler cache
+typechain-types/         # TS-обёртки от typechain
+coverage/                # solidity-coverage output
+gasReporterOutput.*      # hardhat-gas-reporter (txt / json)
+
+# ───────── Hardhat scripts (optional) ─────────
+broadcast/               # forge-style deploy logs
+deployments/             # if you ever use hardhat-deploy
+
+# ───────── Foundry / Remix leftovers ─────────
+.deps/
+.states/
+
+# ───────── Editor / OS noise ─────────
+.vscode/
+.idea/
+.DS_Store
+
+# ───────── Others ─────────
+note.md
+

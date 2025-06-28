@@ -38,6 +38,11 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
 
     address payable public immutable treasury;
 
+    /*──────────────────────── Errors msg ─────────────────────────*/
+    error SoldOut();  
+    error WrongMintFee();
+    error NotTreasury();
+
     /*──────────────────── Constructor ───────────────────────*/
     constructor(address rendererAddr)
         ERC721("HashJing", "HJ")            // ← collection name & symbol
@@ -52,9 +57,8 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     /*──────────────────────── Mint ──────────────────────────*/
     function mint() external payable {
         uint256 id = _nextId;
-        require(id <= GENESIS_SUPPLY, "HashJingNFT: sold out");
-        require(msg.value == GENESIS_PRICE, "HashJingNFT: wrong mint fee");
-
+        if (id > GENESIS_SUPPLY) revert SoldOut();
+        if (msg.value != GENESIS_PRICE) revert WrongMintFee();
         _nextId = id + 1;
         _seed[id] = _generateSeed(id);
         _safeMint(msg.sender, id);
@@ -62,7 +66,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
 
     /*────────────────────── Withdraw ───────────────────────*/
     function withdraw() external {
-        require(msg.sender == treasury, "Not treasury");
+        if (msg.sender != treasury) revert NotTreasury();
         (bool ok,) = treasury.call{value: address(this).balance}("");
         require(ok, "Withdraw failed");
     }

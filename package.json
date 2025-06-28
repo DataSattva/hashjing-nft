@@ -1,0 +1,23 @@
+{
+  "name": "hashjing-nft",
+  "version": "1.0.0",
+  "description": "Smart‑contract suite for **fully on‑chain** minting and rendering of [HashJing](https://github.com/DataSattva/hashjing) **mandalas**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@openzeppelin/contracts": "^5.3.0",
+    "@types/node": "^24.0.6",
+    "chai": "^4.5.0",
+    "ethers": "^6.14.4",
+    "hardhat": "^2.25.0",
+    "hardhat-gas-reporter": "^2.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
