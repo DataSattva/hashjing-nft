@@ -170,7 +170,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
 
     /// @dev Counts the number of one-bits in a byte.
     /// @param b Input byte.
-    /// @return Number of set bits.
+    /// @return c Number of set bits in the byte.
     function _countOnes(uint8 b) internal pure returns (uint8 c) {
         while (b != 0) {
             c += b & 1;
@@ -182,7 +182,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
 
     /// @dev Converts a 256-bit hash into a 4×64 binary grid for flood-fill.
     /// @param hash The seed to convert.
-    /// @return A binary matrix representing the mandala sectors.
+    /// @return grid A binary matrix representing the mandala sectors.
     function _toBitGrid(bytes32 hash) internal pure returns (uint8[64][4] memory grid) {
         for (uint256 i = 0; i < 32; ++i) {
             uint8 hi = uint8(hash[i]) >> 4;
@@ -252,7 +252,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     /// @param vis Global visited matrix (to avoid recounting).
     /// @param loc Local visited state for current run.
     /// @param startSector Column index in row 0 to start from.
-    /// @return True if there's a path to row 3 (edge).
+    /// @return reached True if there's a path to row 3 (edge).
     function _bfs(
         uint8[64][4] memory grid,
         bool[64][4]  memory vis,
