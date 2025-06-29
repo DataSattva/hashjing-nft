@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-/*──────────────────────────────  H a s h J i n g  ────────────────────────────────
-Each NFT stores a 256‑bit seed. A separate on‑chain renderer converts that seed
-into an SVG **mandala**. Two traits are fully derived on‑chain:
-
- • Balanced  – exactly 128 one‑bits in the hash
- • Passages  – number of empty “corridors” from centre to edge (flood‑fill on
-               a 4 × 64 grid)
-
-Metadata is returned as data‑URI JSON; the SVG is inlined, so the contract is
-**100 % on‑chain**.
-──────────────────────────────────────────────────────────────────────────────────*/
+/**
+ * @title HashJingNFT – Fully On-Chain Generative Mandalas
+ * @author DataSattva
+ * @notice This contract implements a fully on-chain NFT collection where each token encodes a
+ *         256-bit seed and renders a deterministic SVG mandala. Traits like `Balanced` and
+ *         `Passages` are derived directly from the hash.
+ * @dev Uses OpenZeppelin ERC721, ERC2981, Ownable. Royalty info is encoded via ERC2981.
+ *      Metadata and SVG image are inlined as data-URIs and stored entirely on-chain.
+ * @custom:license MIT + CC BY-NC 4.0 (code & visuals)
+ * @custom:source https://github.com/DataSattva/hashjing
+ */
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
@@ -44,7 +44,11 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     error NotTreasury();
 
     /*──────────────────── Constructor ───────────────────────*/
-    constructor(address rendererAddr)
+
+    /// @notice Initializes the NFT contract with renderer and royalty settings.
+    /// @dev Sets the deployer as both the `owner` and `treasury`.
+    /// @param rendererAddr Address of the on-chain SVG renderer contract.
+   constructor(address rendererAddr)
         ERC721("HashJing", "HJ")            // ← collection name & symbol
         Ownable(msg.sender)
     {
@@ -55,6 +59,9 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     }
 
     /*──────────────────────── Mint ──────────────────────────*/
+
+    /// @notice Mints a new HashJing NFT to the caller.
+    /// @dev Requires exact payment and respects GENESIS_SUPPLY cap.
     function mint() external payable {
         uint256 id = _nextId;
         if (id > GENESIS_SUPPLY) revert SoldOut();
@@ -71,13 +78,31 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         require(ok, "Withdraw failed");
     }
 
+    /*────────────── Ownership ─ renounce permanently disabled ──────────────*/
+
+    /// @notice Disables renouncing ownership to prevent accidental lockout.
+    /// @dev Overrides OpenZeppelin `Ownable` behavior.
+    function renounceOwnership() public pure override {
+    revert("renounceOwnership is disabled");
+    }
+
     /*────────────── Royalty management ──────────────*/
+
+    /// @notice Updates royalty recipient and fee.
+    /// @dev Only callable by the contract owner. Enforces max fee of 10%.
+    /// @param receiver Address to receive royalties.
+    /// @param feeBps Royalty fee in basis points (e.g., 750 = 7.5%).
     function setRoyalty(address receiver, uint96 feeBps) external onlyOwner {
         require(feeBps <= MAX_ROYALTY_BPS, "Max 10%");
         _setDefaultRoyalty(receiver, feeBps);
     }
 
     /*────────────────────── Metadata ───────────────────────*/
+
+    /// @notice Returns base64-encoded metadata for a given token.
+    /// @dev Metadata includes SVG image and fully on-chain traits.
+    /// @param id Token ID to query.
+    /// @return A base64-encoded data URI JSON string.
     function tokenURI(uint256 id) public view override returns (string memory) {
         require(_existsLocal(id), "HashJingNFT: nonexistent token");
 
@@ -113,10 +138,17 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     }
 
     /*───────────────────── Helpers ─────────────────────────*/
+
+    /// @dev Checks if a token exists (minted and not burned).
+    /// @param id Token ID to check.
+    /// @return True if token exists.
     function _existsLocal(uint256 id) internal view returns (bool) {
         return id != 0 && id < _nextId && _ownerOf(id) != address(0);
     }
 
+    /// @dev Generates a pseudo-random 256-bit seed based on chain data and caller.
+    /// @param id Token ID used in the entropy mix.
+    /// @return A new 32-byte hash (seed).
     function _generateSeed(uint256 id) internal view returns (bytes32) {
         return keccak256(
             abi.encodePacked(blockhash(block.number - 1), block.timestamp, block.prevrandao, id, msg.sender)
@@ -124,6 +156,10 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     }
 
     /*──────── Balanced (exactly 128 ones) ────────*/
+
+    /// @dev Determines if the 256-bit seed has exactly 128 one-bits.
+    /// @param hash The 32-byte seed to analyze.
+    /// @return True if the seed is perfectly balanced.
     function _isBalanced(bytes32 hash) internal pure returns (bool) {
         uint256 ones;
         for (uint256 i = 0; i < 32; ++i) {
@@ -132,6 +168,9 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         return ones == 128;
     }
 
+    /// @dev Counts the number of one-bits in a byte.
+    /// @param b Input byte.
+    /// @return Number of set bits.
     function _countOnes(uint8 b) internal pure returns (uint8 c) {
         while (b != 0) {
             c += b & 1;
@@ -140,6 +179,10 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     }
 
     /*──────── Passages (flood-fill on 4 × 64 grid) ─────────*/
+
+    /// @dev Converts a 256-bit hash into a 4×64 binary grid for flood-fill.
+    /// @param hash The seed to convert.
+    /// @return A binary matrix representing the mandala sectors.
     function _toBitGrid(bytes32 hash) internal pure returns (uint8[64][4] memory grid) {
         for (uint256 i = 0; i < 32; ++i) {
             uint8 hi = uint8(hash[i]) >> 4;
@@ -152,6 +195,9 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         return grid;
     }
 
+    /// @dev Counts the number of unbroken paths (passages) from center to edge.
+    /// @param hash The seed used to build the grid.
+    /// @return Number of traversable corridors in the mandala.
     function _countPassages(bytes32 hash) internal pure returns (uint8) {
         uint8[64][4] memory grid = _toBitGrid(hash);
         bool[64][4] memory visited;
@@ -173,6 +219,17 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     }
 
     /*──────── BFS helpers ────────*/
+
+    /// @dev Enqueues a cell for BFS traversal if it's a valid empty tile.
+    /// @param grid Binary occupancy map.
+    /// @param vis Global visited matrix.
+    /// @param loc Local visited matrix.
+    /// @param qr BFS row queue.
+    /// @param qc BFS column queue.
+    /// @param nr Row index to enqueue.
+    /// @param nc Column index to enqueue.
+    /// @param tail Current queue tail index.
+    /// @return Updated tail index.
     function _maybeEnqueue(
         uint8[64][4] memory grid,
         bool[64][4]  memory vis,
@@ -190,6 +247,12 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         return tail + 1;
     }
 
+    /// @dev Runs BFS from a sector in the first row to detect passage to edge.
+    /// @param grid The mandala grid.
+    /// @param vis Global visited matrix (to avoid recounting).
+    /// @param loc Local visited state for current run.
+    /// @param startSector Column index in row 0 to start from.
+    /// @return True if there's a path to row 3 (edge).
     function _bfs(
         uint8[64][4] memory grid,
         bool[64][4]  memory vis,
@@ -222,6 +285,9 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     }
 
     /*────────── ERC-165 support ──────────*/
+    /// @notice Returns true if this contract implements a given interface.
+    /// @dev Supports ERC721 and ERC2981.
+
     function supportsInterface(bytes4 iid)
         public
         view
