@@ -23,3 +23,6 @@ deployments/
 .vscode/
 .idea/
 .DS_Store
+
+# ───────── Others ─────────
+.env
