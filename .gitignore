@@ -23,6 +23,3 @@ deployments/
 .vscode/
 .idea/
 .DS_Store
-
-# ───────── Others ─────────
-note.md
