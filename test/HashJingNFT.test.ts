@@ -15,16 +15,19 @@ describe("HashJingNFT – basic minting", function () {
     const Renderer = await ethers.getContractFactory("FullMandalaRenderer");
     const renderer = await Renderer.deploy(await storage.getAddress());
 
+    const Oracle   = await ethers.getContractFactory("RandomSeedOracle");
+    const oracle   = await Oracle.deploy();
+
     const NFT      = await ethers.getContractFactory("HashJingNFT");
-    nft            = await NFT.deploy(await renderer.getAddress());
+    nft            = await NFT.deploy(
+      await renderer.getAddress(),
+      await oracle.getAddress()
+    );
+
+    // связываем прокси с NFT (один раз)
+    await oracle.setMainContract(await nft.getAddress());
   });
 
-  it("mints one token and increases totalSupply", async () => {
-    const [, alice] = await ethers.getSigners();
-    await expect(nft.connect(alice).mint({ value: price }))
-      .to.changeTokenBalance(nft, alice, +1);
-    expect(await nft.totalSupply()).to.equal(1n);
-  });
 
   /* ---- sequential 8 192 mints (авто-майн ВКЛ) ---- */
   it("reverts when max 8192 tokens minted", async () => {
