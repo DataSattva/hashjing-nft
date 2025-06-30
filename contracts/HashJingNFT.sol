@@ -23,11 +23,18 @@ interface IMandalaRenderer {
     function svg(bytes32 hash) external view returns (string memory);
 }
 
+// ─── Added: external oracle interface ───
+interface ISeedOracle {
+    function generateSeed(uint256 id) external view returns (bytes32);
+}
+
 contract HashJingNFT is ERC721, ERC2981, Ownable {
     using Strings for uint256;
 
     /*──────────────────────── State ─────────────────────────*/
     IMandalaRenderer public immutable renderer;
+    ISeedOracle public immutable seedOracle; // ← added
+
     mapping(uint256 => bytes32) private _seed;
 
     uint256 private _nextId = 1;
@@ -48,11 +55,13 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     /// @notice Initializes the NFT contract with renderer and royalty settings.
     /// @dev Sets the deployer as both the `owner` and `treasury`.
     /// @param rendererAddr Address of the on-chain SVG renderer contract.
-   constructor(address rendererAddr)
+    /// @param oracleAddr Address of the seed oracle contract.
+    constructor(address rendererAddr, address oracleAddr)
         ERC721("HashJing", "HJ")            // ← collection name & symbol
         Ownable(msg.sender)
     {
         renderer = IMandalaRenderer(rendererAddr);
+        seedOracle = ISeedOracle(oracleAddr); // ← added
         treasury = payable(msg.sender);
 
         _setDefaultRoyalty(treasury, 750);     // 7.5 %
@@ -83,7 +92,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     /// @notice Disables renouncing ownership to prevent accidental lockout.
     /// @dev Overrides OpenZeppelin `Ownable` behavior.
     function renounceOwnership() public pure override {
-    revert("renounceOwnership is disabled");
+        revert("renounceOwnership is disabled");
     }
 
     /*────────────── Royalty management ──────────────*/
@@ -146,13 +155,11 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         return id != 0 && id < _nextId && _ownerOf(id) != address(0);
     }
 
-    /// @dev Generates a pseudo-random 256-bit seed based on chain data and caller.
+    /// @dev Generates a pseudo-random 256-bit seed based on oracle.
     /// @param id Token ID used in the entropy mix.
     /// @return A new 32-byte hash (seed).
     function _generateSeed(uint256 id) internal view returns (bytes32) {
-        return keccak256(
-            abi.encodePacked(blockhash(block.number - 1), block.timestamp, block.prevrandao, id, msg.sender)
-        );
+        return seedOracle.generateSeed(id); // ← updated
     }
 
     /*──────── Balanced (exactly 128 ones) ────────*/
@@ -220,16 +227,6 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
 
     /*──────── BFS helpers ────────*/
 
-    /// @dev Enqueues a cell for BFS traversal if it's a valid empty tile.
-    /// @param grid Binary occupancy map.
-    /// @param vis Global visited matrix.
-    /// @param loc Local visited matrix.
-    /// @param qr BFS row queue.
-    /// @param qc BFS column queue.
-    /// @param nr Row index to enqueue.
-    /// @param nc Column index to enqueue.
-    /// @param tail Current queue tail index.
-    /// @return Updated tail index.
     function _maybeEnqueue(
         uint8[64][4] memory grid,
         bool[64][4]  memory vis,
@@ -247,12 +244,6 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         return tail + 1;
     }
 
-    /// @dev Runs BFS from a sector in the first row to detect passage to edge.
-    /// @param grid The mandala grid.
-    /// @param vis Global visited matrix (to avoid recounting).
-    /// @param loc Local visited state for current run.
-    /// @param startSector Column index in row 0 to start from.
-    /// @return reached True if there's a path to row 3 (edge).
     function _bfs(
         uint8[64][4] memory grid,
         bool[64][4]  memory vis,
@@ -287,7 +278,6 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     /*────────── ERC-165 support ──────────*/
     /// @notice Returns true if this contract implements a given interface.
     /// @dev Supports ERC721 and ERC2981.
-
     function supportsInterface(bytes4 iid)
         public
         view
