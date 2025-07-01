@@ -24,8 +24,10 @@ interface IMandalaRenderer {
 }
 
 // ─── Added: external oracle interface ───
-interface ISeedOracle {
-    function generateSeed(uint256 id) external view returns (bytes32);
+interface IHashJingOracle {
+    function requestSeed(uint256 tokenId) external;
+    function revealSeed(uint256 tokenId) external;
+    function getSeed(uint256 tokenId) external view returns (uint256);
 }
 
 contract HashJingNFT is ERC721, ERC2981, Ownable {
@@ -33,9 +35,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
 
     /*──────────────────────── State ─────────────────────────*/
     IMandalaRenderer public immutable renderer;
-    ISeedOracle public immutable seedOracle; // ← added
-
-    mapping(uint256 => bytes32) private _seed;
+    IHashJingOracle public immutable seedOracle;
 
     uint256 private _nextId = 1;
 
@@ -61,7 +61,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         Ownable(msg.sender)
     {
         renderer = IMandalaRenderer(rendererAddr);
-        seedOracle = ISeedOracle(oracleAddr); // ← added
+        seedOracle = IHashJingOracle(oracleAddr);
         treasury = payable(msg.sender);
 
         _setDefaultRoyalty(treasury, 750);     // 7.5 %
@@ -76,8 +76,8 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         if (id > GENESIS_SUPPLY) revert SoldOut();
         if (msg.value != GENESIS_PRICE) revert WrongMintFee();
         _nextId = id + 1;
-        _seed[id] = _generateSeed(id);
         _safeMint(msg.sender, id);
+        seedOracle.requestSeed(id); // ← вызов запроса сидов
     }
 
     /*────────────────────── Withdraw ───────────────────────*/
@@ -115,7 +115,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     function tokenURI(uint256 id) public view override returns (string memory) {
         require(_existsLocal(id), "HashJingNFT: nonexistent token");
 
-        bytes32 seed = _seed[id];
+        bytes32 seed = bytes32(seedOracle.getSeed(id));
         string memory image = Base64.encode(bytes(renderer.svg(seed)));
 
         bool  balanced = _isBalanced(seed);
@@ -153,13 +153,6 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     /// @return True if token exists.
     function _existsLocal(uint256 id) internal view returns (bool) {
         return id != 0 && id < _nextId && _ownerOf(id) != address(0);
-    }
-
-    /// @dev Generates a pseudo-random 256-bit seed based on oracle.
-    /// @param id Token ID used in the entropy mix.
-    /// @return A new 32-byte hash (seed).
-    function _generateSeed(uint256 id) internal view returns (bytes32) {
-        return seedOracle.generateSeed(id); // ← updated
     }
 
     /*──────── Balanced (exactly 128 ones) ────────*/
