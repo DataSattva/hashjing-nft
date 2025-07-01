@@ -184,6 +184,19 @@ The full concept, white‑paper and Python notebooks live in the parent repo: [h
 
 ---
 
+## Test Report
+
+Unit tests, gas metrics, and trait statistics are documented in
+👉 **[TEST\_REPORT.md](https://github.com/DataSattva/hashjing-nft/blob/main/TEST_REPORT.md)**
+
+Covers:
+
+* minting, metadata, ERC‑interfaces
+* full-collection trait analysis (`Balanced`, `Passages`)
+* gas usage per method
+
+---
+
 ## Licences
 
 * **Smart contracts:** MIT
