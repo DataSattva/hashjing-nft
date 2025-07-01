@@ -44,18 +44,26 @@ Thus **8 192** (`0x2000`) balances scarcity with excitement: collectors almost
 
 ---
 
-## Repository Layout
+## Project Layout
 
 ```text
 ├── README.md                    # This file
-├── contracts/
+├── LICENSE-MIT.md              # License for Solidity code
+├── contracts/                  # All Solidity contracts
 │   ├── HashJingNFT.sol          # ERC‑721 core contract (mint + traits + metadata)
 │   ├── FullMandalaRenderer.sol  # Pure‑view SVG generator used by the NFT contract
 │   ├── HashJingSVGStorage.sol   # Stores pre‑computed SVG path segments via SSTORE2
 │   ├── SSTORE2.sol              # Library (0xSequence) for cheap calldata storage
 │   └── utils/
 │       └── Bytecode.sol         # Minimal helper to read SSTORE2 payloads
-└── LICENSE-MIT.md               # License for Solidity code
+├── scripts/                    # Dev scripts (deployment, stats, etc.)
+│   └── collectionStats.ts       # Mass minting and statistical analysis of traits
+├── test/                       # Hardhat test suite
+│   └── HashJingNFT.test.ts      # Unit tests: minting, metadata, ERC‑interfaces
+├── hardhat.config.ts          # Hardhat configuration
+├── package.json               # NPM dependencies
+├── tsconfig.json              # TypeScript settings
+└── .gitignore                 # Git exclusions
 ```
 
 > **Note** `FullMandalaRenderer.sol` is a separate stateless contract so it can be audited and optimised independently of the NFT minting logic.
