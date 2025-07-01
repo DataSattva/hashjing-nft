@@ -62,8 +62,7 @@ Each run deploys fresh contracts and executes full minting logic. Due to hash-ba
 
 ### Results
 
-<details>
-<summary><strong>Run #1</strong></summary>
+<strong>Run #1</strong>
 
 ```
 Tokens minted   : 8192
@@ -86,10 +85,7 @@ Passages distribution:
 ⏱ total time: 173m53.728s
 ```
 
-</details>
-
-<details>
-<summary><strong>Run #2</strong></summary>
+<strong>Run #2</strong>
 
 ```
 Tokens minted   : 8192
@@ -112,10 +108,7 @@ Passages distribution:
 ⏱ total time: 183m38.856s
 ```
 
-</details>
-
-<details>
-<summary><strong>Run #3</strong></summary>
+<strong>Run #3</strong>
 
 ```
 Tokens minted   : 8192  
@@ -136,8 +129,6 @@ Passages distribution:
 
 ⏱ total time: 178m46s (approx.)
 ```
-
-</details>
 
 ---
 

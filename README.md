@@ -74,9 +74,9 @@ Thus **8 192** (`0x2000`) balances scarcity with excitement: collectors almost
 
 | Trait        | Type   | Range / Values    | On‑chain? | Notes                                                                                  |
 | ------------ | ------ | ----------------- | --------- | -------------------------------------------------------------------------------------- |
-| **Balanced** | Bool   | `true` / `false`  | ✅         | `true` if exactly 128 one‑bits in the seed (perfect yin‑yang).                         |
-| **Passages** | Number | `0 – 32`          | ✅         | Counts open corridors that connect the centre cell to the edge in a 4‑ring flood‑fill. |
-| **Seed**     | String | `0x…` 32‑byte hex | ✅         | Raw entropy value, exposed for researchers and analytics.                              |
+| **Balanced** | Bool   | `true` / `false`  | `yes`         | `true` if exactly 128 one‑bits in the seed (perfect yin‑yang).                         |
+| **Passages** | Number | `0 – 32`          | `yes`         | Counts open corridors that connect the centre cell to the edge in a 4‑ring flood‑fill. |
+| **Seed**     | String | `0x…` 32‑byte hex | `yes`         | Raw entropy value, exposed for researchers and analytics.                              |
 
 All other potential rarity analytics (symmetries, palindromes, etc.) are left to off‑chain explorers to keep on‑chain gas low.
 
