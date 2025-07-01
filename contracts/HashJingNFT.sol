@@ -10,7 +10,7 @@ pragma solidity ^0.8.25;
  * @dev Uses OpenZeppelin ERC721, ERC2981, Ownable. Royalty info is encoded via ERC2981.
  *      Metadata and SVG image are inlined as data-URIs and stored entirely on-chain.
  * @custom:license MIT + CC BY-NC 4.0 (code & visuals)
- * @custom:source https://github.com/DataSattva/hashjing
+ * @custom:source https://github.com/DataSattva/hashjing-nft
  */
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
