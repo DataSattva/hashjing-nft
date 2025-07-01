@@ -26,4 +26,4 @@ deployments/
 
 # ───────── Others ─────────
 .env
-contracts/
+hidden/
