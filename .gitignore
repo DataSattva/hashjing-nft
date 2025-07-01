@@ -26,3 +26,4 @@ deployments/
 
 # ───────── Others ─────────
 .env
+contracts/
