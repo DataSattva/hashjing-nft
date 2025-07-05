@@ -84,58 +84,57 @@ All other potential rarity analytics (symmetries, palindromes, etc.) are left to
 
 ## Entropy Generation
 
-HashJing does **not rely on oracles** (like Chainlink VRF) to generate randomness. Instead, it uses a deterministic **on-chain entropy mix** that balances simplicity, cost-efficiency, and unpredictability.
+HashJing **does not rely on external oracles** (such as Chainlink VRF) for randomness. Instead, it employs a deterministic **on-chain entropy mix** that balances simplicity, cost-efficiency, and unpredictability.
 
 ### Generation Method
 
-Each seed is computed on-chain at the moment of minting via:
+A seed is computed at mint time via:
 
 ```solidity
 keccak256(
     abi.encodePacked(
         blockhash(block.number - 1),
-        block.timestamp,
         block.prevrandao,
+        address(this),
         tokenId,
         msg.sender
     )
 )
 ```
 
-This 256-bit hash combines:
+The mix combines:
 
-| Component          | Purpose                                                     |
-| ------------------ | ----------------------------------------------------------- |
-| `blockhash(-1)`    | Commit to previous block’s state                            |
-| `block.timestamp`  | Add minor entropy (helps prevent exact replay across forks) |
-| `block.prevrandao` | Ethereum’s native randomness beacon (secure post-Merge)     |
-| `tokenId`          | Ensure unique seeds per token                               |
-| `msg.sender`       | Tie the result to the caller’s address                      |
+| Component          | Purpose                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `blockhash(-1)`    | Commits to the previous block’s state — the validator can no longer modify it.      |
+| `block.prevrandao` | Ethereum’s built-in randomness beacon (secure since the Merge).                     |
+| `address(this)`    | Contract-address salt, unique post-deployment; thwarts pre-computed rainbow tables. |
+| `tokenId`          | Guarantees uniqueness for every token.                                              |
+| `msg.sender`       | Binds the seed to the minter’s address.                                             |
 
-The result is a **unique and pseudo-random seed**, fully computed within the EVM at mint time.
+The result is a **unique pseudo-random 256-bit seed**, fully computed within the EVM during mint.
 
 ### Why is this secure?
 
-* `block.prevrandao` is **inaccessible before the block is mined**, and is **not manipulable by the minter**.
-* `msg.sender` and `tokenId` ensure **per-user and per-mint uniqueness**.
-* `block.timestamp` adds small-time entropy, deterring brute replay attempts.
-* The `keccak256` hash makes it computationally infeasible to backsolve for desired outcomes.
+* `block.prevrandao` is unknown until the block is mined and **cannot be influenced** by the minter.
+* `blockhash(-1)` is already sealed — the validator cannot “tweak” it.
+* `address(this)` prevents rainbow-table precomputation before the contract is live.
+* `tokenId` and `msg.sender` enforce per-mint uniqueness.
+* `keccak256` makes back-solving for desired seeds computationally infeasible.
 
-### Front-running resistance
+### Front-running Resistance
 
-A minter **cannot predict** their own seed **before** their transaction is confirmed in a block. While the `msg.sender` and `tokenId` are known, the final seed depends on **`prevrandao`**, which is only revealed **after** the block is finalized.
-
-This **prevents gaming the system** to mint only "rare" tokens or manipulating the outcome. As a result, rarity discovery remains **surprising and fair** for all collectors.
+A miner **cannot predict** the final seed before including the transaction, and the minter only learns it after block confirmation. Thus, sniping for rare tokens is economically constrained: each additional attempt costs the mint fee.
 
 ### Why not Chainlink VRF?
 
-While Chainlink VRF offers cryptographic randomness, it requires:
+Although VRF provides cryptographically strong randomness, it requires:
 
-* Additional oracle dependencies
-* Multiple transactions (`request/fulfill`)
-* Higher gas costs
+* Dependence on an external oracle
+* Two transactions (`request / fulfill`)
+* Higher gas costs and LINK expenditure
 
-For **generative art**, especially sealed and collectible forms like mandalas, **deterministic entropy that is unpredictable until mint** is a secure and elegant solution.
+For **generative art**, instant, deterministic, and sufficiently unpredictable entropy is more valuable. The proposed on-chain mix meets these needs elegantly.
 
 ---
 
