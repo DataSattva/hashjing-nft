@@ -18,12 +18,13 @@ import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IMandalaRenderer {
     function svg(bytes32 hash) external view returns (string memory);
 }
 
-contract HashJingNFT is ERC721, ERC2981, Ownable {
+contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     using Strings for uint256;
 
     /*──────────────────────── State ─────────────────────────*/
@@ -70,7 +71,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
 
     /// @notice Mints a new HashJing NFT to the caller.
     /// @dev Requires exact payment and respects GENESIS_SUPPLY cap.
-    function mint() external payable {
+    function mint() external payable nonReentrant {
         if (!mintingEnabled) revert("Minting is not enabled yet");
         uint256 id = _nextId;
         if (id > GENESIS_SUPPLY) revert SoldOut();
