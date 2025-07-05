@@ -36,29 +36,24 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
     uint256 public constant GENESIS_PRICE  = 0.002 ether;
     uint96  public constant MAX_ROYALTY_BPS = 1_000;   // 10 %
 
-    address payable public immutable treasury;
     bool public mintingEnabled = false;
 
 
     /*──────────────────────── Errors msg ─────────────────────────*/
     error SoldOut();  
     error WrongMintFee();
-    error NotTreasury();
     error MintAlreadyEnabled();
 
     /*──────────────────── Constructor ───────────────────────*/
 
-    /// @notice Initializes the NFT contract with renderer and royalty settings.
-    /// @dev Sets the deployer as both the `owner` and `treasury`.
-    /// @param rendererAddr Address of the on-chain SVG renderer contract.
-   constructor(address rendererAddr)
-        ERC721("HashJing", "HJ")            // ← collection name & symbol
+    /// @notice Initializes the NFT contract with renderer and default royalty.
+    /// @dev The deployer becomes the initial owner and default royalty receiver.
+    constructor(address rendererAddr)
+        ERC721("HashJing", "HJ")
         Ownable(msg.sender)
     {
         renderer = IMandalaRenderer(rendererAddr);
-        treasury = payable(msg.sender);
-
-        _setDefaultRoyalty(treasury, 750);     // 7.5 %
+        _setDefaultRoyalty(payable(msg.sender), 750); // 7.5 %
     }
 
     /*──────────────────────── Mint ──────────────────────────*/
@@ -85,11 +80,11 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         _safeMint(msg.sender, id);
     }
 
-
     /*────────────────────── Withdraw ───────────────────────*/
-    function withdraw() external {
-        if (msg.sender != treasury) revert NotTreasury();
-        (bool ok,) = treasury.call{value: address(this).balance}("");
+    /// @notice Sends the entire contract balance to the owner.
+    /// @dev Callable only by the contract owner.
+    function withdraw() external onlyOwner {
+        (bool ok, ) = msg.sender.call{value: address(this).balance}("");
         require(ok, "Withdraw failed");
     }
 
@@ -130,14 +125,13 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         string memory attrs = string.concat(
             '{ "trait_type":"Balanced", "value":"', balanced ? "true" : "false", '" },',
             '{ "trait_type":"Passages", "value":"', Strings.toString(passages), '" },',
-            '{ "trait_type":"Seed", "value":"', Strings.toHexString(uint256(seed), 32), '" }'
+            '{ "trait_type":"Source hash", "value":"', Strings.toHexString(uint256(seed), 32), '" }'
         );
 
         string memory json = Base64.encode(
             abi.encodePacked(
                 '{"name":"HashJing #', id.toString(), '",',
-                '"description":"Fully on-chain HashJing mandala - a deterministic generative form derived from cryptographic entropy. Source hash: ',
-                    Strings.toHexString(uint256(seed), 32), '",',
+                '"description":"Fully on-chain HashJing mandala \\u2014 a deterministic glyph where entropy becomes form.",',
                 '"creator":"DataSattva",',
                 '"external_url":"https://github.com/DataSattva/hashjing",',
                 '"license":"CC BY-NC 4.0",',
@@ -161,12 +155,19 @@ contract HashJingNFT is ERC721, ERC2981, Ownable {
         return id != 0 && id < _nextId && _ownerOf(id) != address(0);
     }
 
-    /// @dev Generates a pseudo-random 256-bit seed based on chain data and caller.
-    /// @param id Token ID used in the entropy mix.
-    /// @return A new 32-byte hash (seed).
+    /// @dev Generates a 256-bit pseudo-random seed for a given tokenId.
+    ///      The mix is fully on-chain and does not rely on external oracles.
+    /// @param id Token ID used as part of the entropy mix.
+    /// @return 32-byte seed unique to this mint.
     function _generateSeed(uint256 id) internal view returns (bytes32) {
         return keccak256(
-            abi.encodePacked(blockhash(block.number - 1), block.timestamp, block.prevrandao, id, msg.sender)
+            abi.encodePacked(
+                blockhash(block.number - 1),   // fixed hash of the previous block (validator cannot modify)
+                block.prevrandao,              // post-Merge randomness beacon revealed only when the block is sealed
+                address(this),                 // contract address as deploy-time salt (prevents pre-compute rainbow tables)
+                id,                            // tokenId guarantees per-token uniqueness
+                msg.sender                     // ties entropy to the minter’s address
+            )
         );
     }
 
