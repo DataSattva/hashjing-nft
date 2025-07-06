@@ -44,6 +44,8 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     error SoldOut();  
     error WrongMintFee();
     error MintAlreadyEnabled();
+    error MintDisabled(); 
+    error NonexistentToken();
 
     /*──────────────────── Constructor ───────────────────────*/
 
@@ -72,7 +74,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     /// @notice Mints a new HashJing NFT to the caller.
     /// @dev Requires exact payment and respects GENESIS_SUPPLY cap.
     function mint() external payable nonReentrant {
-        if (!mintingEnabled) revert("Minting is not enabled yet");
+        if (!mintingEnabled) revert MintDisabled();
         uint256 id = _nextId;
         if (id > GENESIS_SUPPLY) revert SoldOut();
         if (msg.value != GENESIS_PRICE) revert WrongMintFee();
@@ -115,7 +117,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     /// @param id Token ID to query.
     /// @return A base64-encoded data URI JSON string.
     function tokenURI(uint256 id) public view override returns (string memory) {
-        require(_existsLocal(id), "HashJingNFT: nonexistent token");
+        if (!_existsLocal(id)) revert NonexistentToken();
 
         bytes32 seed = _seed[id];
         string memory image = Base64.encode(bytes(renderer.svg(seed)));
