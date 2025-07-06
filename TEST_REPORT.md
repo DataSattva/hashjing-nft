@@ -27,20 +27,21 @@ The following unit tests verify basic minting functionality, supply limits, meta
 
 #### Method-level
 
-| Method       | Min Gas  | Max Gas  | Avg Gas  | Calls  |
-|--------------|----------|----------|----------|--------|
-| `mint`       | 78,980   | 101,368  | ~84,000  | 8196   |
-| `withdraw`   | —        | —        | 28,276   | 2      |
+| Method          | Min Gas | Max Gas | Avg Gas  | Calls |
+| --------------- | ------- | ------- | -------- | ----- |
+| `enableMinting` | —       | —       | 46,456   | 6     |
+| `mint`          | 83,480  | 100,580 | \~83,490 | 8196  |
+| `withdraw`      | —       | —       | 30,381   | 2     |
 
 #### Deployments
 
-| Contract             | Avg Gas     | % of 30M limit |
-|----------------------|-------------|----------------|
-| HashJingNFT          | ~2,457,000  | ~8.2%          |
-| FullMandalaRenderer  | ~783,000    | ~2.6%          |
-| HashJingSVGStorage   | ~1,081,950  | ~3.6%          |
+| Contract            | Avg Gas     | % of 30M limit |
+| ------------------- | ----------- | -------------- |
+| HashJingNFT         | \~2,491,000 | \~8.3%         |
+| FullMandalaRenderer | \~783,100   | \~2.6%         |
+| HashJingSVGStorage  | \~1,081,950 | \~3.6%         |
 
-Total deployment cost: ~4.3M gas — safely below block limit.
+Total deployment cost: \~4.4M gas — safely below block limit.
 
 ---
 
@@ -127,9 +128,8 @@ Passages distribution:
   09 : 65 (0.79 %)
   10 : 9 (0.11 %)
 
-⏱ total time: 178m46s (approx.)
+⏱ total time: 178m46s
 ```
-
 ---
 
 ## Summary
