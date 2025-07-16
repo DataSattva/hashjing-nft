@@ -63,9 +63,10 @@ Thus **8 192** (`0x2000`) balances scarcity with excitement: collectors almost s
 ## Project Layout
 
 ```text
-├── README.md                    # This file
+├── README.md                   # This file
 ├── LICENSE-MIT.md              # License for Solidity code
-├── contracts/                  # All Solidity contracts
+├── HASHJING_COMMERCIAL_LICENSE_v1.0.md
+├── contracts/                   # All Solidity contracts
 │   ├── HashJingNFT.sol          # ERC‑721 core contract (mint + traits + metadata)
 │   ├── FullMandalaRenderer.sol  # Pure‑view SVG generator used by the NFT contract
 │   ├── HashJingSVGStorage.sol   # Stores pre‑computed SVG path segments via SSTORE2
@@ -229,6 +230,16 @@ Covers:
 ## Licences
 
 * **Smart contracts:** MIT
-* **Visual assets** (SVG output) are licensed under CC BY‑NC 4.0 — see [https://github.com/DataSattva/hashjing/blob/main/LICENSE-CCBYNC.md](https://github.com/DataSattva/hashjing/blob/main/LICENSE-CCBYNC.md)
+* **Visual assets** (SVG output) are licensed under **CC BY-NC 4.0** — see [https://github.com/DataSattva/hashjing/blob/main/LICENSE-CCBYNC.md](LICENSE-CCBYNC.md)  
+*(for the off-chain HashJing generator).*
 
-Commercial use of generated artworks requires separate permission from the artist.
+| Layer / artefact                | Default licence | Commercial exception | Scope |
+|---------------------------------|-----------------|----------------------|-------|
+| **Source code** (Solidity & TS) | MIT             | —                    | all repos |
+| **SVG outputs** – *off-chain*   | CC BY-NC 4.0    | —                    | parent repo |
+| **SVG outputs** – *NFT mainnet* | CC BY-NC 4.0    | **Hash Jing Commercial License v1.0**<br>(applies **only** to NFTs minted from the official main-net contracts) | this repo |
+
+<sub>• No off-chain royalty is required. On-chain secondary-sale royalty (ERC-2981, 7.5 %) remains in force.<br>
+• Only NFTs from the official main-net contracts listed above are covered.</sub>
+
+For the full text see [`HASHJING_COMMERCIAL_LICENSE_v1.0.md`](HASHJING_COMMERCIAL_LICENSE_v1.0.md).

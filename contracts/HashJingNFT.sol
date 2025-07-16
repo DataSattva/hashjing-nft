@@ -9,7 +9,7 @@ pragma solidity ^0.8.25;
  *         `Passages` are derived directly from the hash.
  * @dev Uses OpenZeppelin ERC721, ERC2981, Ownable. Royalty info is encoded via ERC2981.
  *      Metadata and SVG image are inlined as data-URIs and stored entirely on-chain.
- * @custom:license MIT + CC BY-NC 4.0 (code & visuals)
+ * @custom:license-art CC BY-NC 4.0 + Hash Jing Commercial License v1.0
  * @custom:source https://github.com/DataSattva/hashjing-nft
  */
 
@@ -136,8 +136,8 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
                 '{"name":"HashJing #', id.toString(), '",',
                 '"description":"Fully on-chain HashJing mandala \\u2014 a deterministic glyph where entropy becomes form.",',
                 '"creator":"DataSattva",',
-                '"external_url":"https://github.com/DataSattva/hashjing",',
-                '"license":"CC BY-NC 4.0",',
+                '"external_url":"https://github.com/DataSattva/hashjing-nft",',
+                '"license":"CC BY-NC 4.0 + Hash Jing Commercial License v1.0",'
                 '"image":"data:image/svg+xml;base64,', image, '",',
                 '"attributes":[', attrs, ']}'
             )
