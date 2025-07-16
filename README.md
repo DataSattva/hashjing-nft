@@ -230,7 +230,7 @@ Covers:
 ## Licences
 
 * **Smart contracts:** MIT
-* **Visual assets** (SVG output) are licensed under **CC BY-NC 4.0** — see [https://github.com/DataSattva/hashjing/blob/main/LICENSE-CCBYNC.md](LICENSE-CCBYNC.md)  
+* **Visual assets** (SVG output) are licensed under **CC BY-NC 4.0** — see [`LICENSE-CCBYNC.md`](https://github.com/DataSattva/hashjing/blob/main/LICENSE-CCBYNC.md)  
 *(for the off-chain HashJing generator).*
 
 | Layer / artefact                | Default licence | Commercial exception | Scope |
