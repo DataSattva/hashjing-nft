@@ -37,11 +37,11 @@ The following unit tests verify basic minting functionality, supply limits, meta
 
 | Contract            | Avg Gas     | % of 30M limit |
 | ------------------- | ----------- | -------------- |
-| HashJingNFT         | \~2,491,000 | \~8.3%         |
-| FullMandalaRenderer | \~783,100   | \~2.6%         |
-| HashJingSVGStorage  | \~1,081,950 | \~3.6%         |
+| HashJingNFT         | \~2,495,625 | \~8.3%         |
+| FullMandalaRenderer | \~783,121   | \~2.6%         |
+| HashJingSVGStorage  | \~1,020,903 | \~3.4%         |
 
-Total deployment cost: \~4.4M gas — safely below block limit.
+Total deployment cost: \~4.3M gas — safely below block limit.
 
 ---
 
