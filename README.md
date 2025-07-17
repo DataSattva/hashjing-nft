@@ -101,11 +101,12 @@ All other potential rarity analytics (symmetries, palindromes, etc.) are left to
 
 ## Entropy Generation
 
-HashJing **does not rely on external oracles** (such as Chainlink VRF) for randomness. Instead, it employs a deterministic **on-chain entropy mix** that balances simplicity, cost-efficiency, and unpredictability.
+HashJing relies on a **deterministic on-chain entropy mix** rather than an external oracle.  
+The seed is finalised inside the same block that mints the token, giving instant reveal without compromising fairness.
 
 ### Generation Method
 
-A seed is computed at mint time via:
+A 256-bit seed is calculated at mint time:
 
 ```solidity
 keccak256(
@@ -119,77 +120,47 @@ keccak256(
 )
 ```
 
-The mix combines:
+| Component          | Why it matters                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| `blockhash(-1)`    | Previous block is already sealed; no one can alter it.                               |
+| `block.prevrandao` | Ethereum’s built-in randomness beacon — unknown until the block is mined.            |
+| `address(this)`    | Contract-address salt, unique after deployment; blocks rainbow-table precomputation. |
+| `tokenId`          | Different for every mint.                                                            |
+| `msg.sender`       | Binds the seed to the minter’s wallet.                                               |
 
-| Component          | Purpose                                                                             |
-| ------------------ | ----------------------------------------------------------------------------------- |
-| `blockhash(-1)`    | Commits to the previous block’s state — the validator can no longer modify it.      |
-| `block.prevrandao` | Ethereum’s built-in randomness beacon (secure since the Merge).                     |
-| `address(this)`    | Contract-address salt, unique post-deployment; thwarts pre-computed rainbow tables. |
-| `tokenId`          | Guarantees uniqueness for every token.                                              |
-| `msg.sender`       | Binds the seed to the minter’s address.                                             |
+### Security & Front-Running Resistance
 
-The result is a **unique pseudo-random 256-bit seed**, fully computed within the EVM during mint.
+* **Minters and bots** do *not* know the final seed in advance because `prevrandao` only becomes public the moment the block is produced.
+* Cancelling a pending tx costs only gas; the 0.002 ETH mint price is paid **once per successful mint**, so “brute-forcing” rare seeds quickly becomes expensive.
+* **Block proposers** see every seed before publishing the block, but racing for a single rare mandala would mean dropping or re-ordering user transactions and risking ≈0.044 ETH in block rewards plus reputational / protocol penalties — a poor trade-off.
 
-### Why is this secure?
-
-* `block.prevrandao` is unknown until the block is mined and **cannot be influenced** by the minter.
-* `blockhash(-1)` is already sealed — the validator cannot “tweak” it.
-* `address(this)` prevents rainbow-table precomputation before the contract is live.
-* `tokenId` and `msg.sender` enforce per-mint uniqueness.
-* `keccak256` makes back-solving for desired seeds computationally infeasible.
-
-### Front-running Resistance
-
-A miner **cannot predict** the final seed before including the transaction, and the minter only learns it after block confirmation. Thus, sniping for rare tokens is economically constrained: each additional attempt costs the mint fee.
+Overall, any attempt to bias the seed costs *more* than the potential gain, which is why commit-reveal or VRF is unnecessary for this generative-art use-case.
 
 ### Why not Chainlink VRF?
 
-Although VRF provides cryptographically strong randomness, it requires:
+* Requires an external oracle and LINK fees
+* Two transactions (`request → fulfill`) → slower UX
+* Higher gas costs
 
-* Dependence on an external oracle
-* Two transactions (`request / fulfill`)
-* Higher gas costs and LINK expenditure
-
-For **generative art**, instant, deterministic, and sufficiently unpredictable entropy is more valuable. The proposed on-chain mix meets these needs elegantly.
+For art that values on-chain purity and instant reveal, the deterministic mix above strikes the right balance between unpredictability, simplicity, and cost-efficiency.
 
 ---
 
-## Deployment Notes
+## Why your wallet thumbnail might look empty — and why that’s perfectly normal
 
-1. **Compile & test**
+HashJing stores **everything** (JSON *and* SVG) directly inside the smart contract and serves it as a single  
+`data:image/svg+xml;base64,…` string. A few wallets — most notably MetaMask (Chrome / Mobile) — still ignore  
+such `data:` images and therefore show a blank square.
 
-   ```bash
-   npm install
-   npx hardhat test
-   ```
+**This is neither an error nor a missing file.**  
+Open the token in any interface that supports on-chain SVG — e.g. **OpenSea**, **fx(hash)-ETH**, **Rainbow**,  
+or any custom viewer that decodes `image_data` — and your mandala will render instantly, straight from Ethereum.
 
-2. **Deploy renderer first**
-
-   ```bash
-   npx hardhat run scripts/deploy_renderer.ts --network sepolia
-   ```
-
-3. **Deploy `HashJingNFT.sol`** with the renderer address as constructor arg.
-
-4. **Verify & publish** source on Etherscan (or fxhash-ETH UI).
-
-Gas snapshot (Ethereum L1, 3 Gwei):
-
-* Renderer deployment: ≈ 350 k gas → 0.004 ETH ≈ \$12
-* NFT contract deployment: ≈ 1 M gas → 0.012 ETH ≈ \$36
-* Single mint: 130–160 k gas → < \$2
-* Contracts compile with Solidity 0.8.26 and OpenZeppelin 5.3.0.
-
----
-
-### Token viewer & RPC note  
-
-`tokenURI()` weighs ~60–80 kB of JSON + SVG.  
-If a public RPC endpoint truncates large responses, query via a full node or any premium tier (Alchemy/Infura, QuickNode, Cloudflare Gateway); the on-chain data itself remains intact.  
-
-> **Live preview:** after minting you can inspect any ID at  
-> <https://datasattva.github.io/hashjing-mint-testnet/> — the page decodes `tokenURI` in-browser and shows the SVG, traits, and an OpenSea link.
+Choosing full on-chain purity is a conscious design decision: you trade a bit of UX in a couple of popular  
+wallets for the rock-solid guarantee that your artwork can **never** turn into a broken JPEG because a server  
+went offline or an IPFS pin was lost. Immutability, perpetual availability, and the idea that **“the medium is  
+part of the art itself”** outweigh the convenience of a thumbnail everywhere. A blank square in one wallet is  
+simply a reminder that your piece lives entirely on-chain.
 
 ---
 
