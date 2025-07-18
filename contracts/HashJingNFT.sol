@@ -39,13 +39,15 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
 
     bool public mintingEnabled = false;
 
-
+    bool public allowlistOnly = true;              // gate – starts as true
+    mapping(address => bool) private _isAllowed;   
     /*──────────────────────── Errors msg ─────────────────────────*/
     error SoldOut();  
     error WrongMintFee();
     error MintAlreadyEnabled();
     error MintDisabled(); 
     error NonexistentToken();
+    error NotWhitelisted();
 
     /*──────────────────── Constructor ───────────────────────*/
 
@@ -59,9 +61,28 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         _setDefaultRoyalty(payable(msg.sender), 750); // 7.5 %
     }
 
+    /*──────────────────────── Admin ─────────────────────────*/
+
+     event AllowlistDisabled();
+
+    /// @notice Bulk-add addresses to the allow-list (may be called many times).
+    function setAllowList(address[] calldata users) external onlyOwner {
+        for (uint256 i; i < users.length; ++i) {
+            _isAllowed[users[i]] = true;
+        }
+    }
+
+    /// @notice Irreversibly opens mint to everyone.
+    /// @dev Can be called only once. After that `allowlistOnly` is permanently false.
+    function disableAllowlist() external onlyOwner {
+        require(allowlistOnly, "Already public");
+        allowlistOnly = false;
+        emit AllowlistDisabled();
+    }
+
     /*──────────────────────── Mint ──────────────────────────*/
 
-    event MintingEnabled();
+    event MintingEnabled();                   
 
     /// @notice Enables public minting of HashJing NFTs.
     /// @dev Callable only once and only by the contract owner. Cannot be undone.
@@ -72,18 +93,22 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     }
 
     /// @notice Mints a new HashJing NFT to the caller.
-    /// @dev Requires exact payment and respects GENESIS_SUPPLY cap.
+    /// @dev Requires exact payment, allow-list check and supply cap.
     function mint() external payable nonReentrant {
         if (!mintingEnabled) revert MintDisabled();
+        if (allowlistOnly && !_isAllowed[msg.sender]) revert NotWhitelisted();
+
         uint256 id = _nextId;
         if (id > GENESIS_SUPPLY) revert SoldOut();
         if (msg.value != GENESIS_PRICE) revert WrongMintFee();
+
         _nextId = id + 1;
         _seed[id] = _generateSeed(id);
         _safeMint(msg.sender, id);
     }
 
     /*────────────────────── Withdraw ───────────────────────*/
+
     /// @notice Sends the entire contract balance to the owner.
     /// @dev Callable only by the contract owner.
     function withdraw() external onlyOwner {
