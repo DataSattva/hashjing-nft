@@ -159,7 +159,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         string memory json = Base64.encode(
             abi.encodePacked(
                 '{"name":"HashJing #', id.toString(), '",',
-                '"description":"HashJing is a fully on-chain mandala: a deterministic glyph where entropy becomes form. A 256-bit cryptographic seed unfolds into self-contained SVG art, mapped onto the 64 hexagrams of the I Ching. No IPFS. No servers. Just Ethereum - forever.",',
+                '"description":"HashJing is a fully on-chain mandala: a deterministic glyph where entropy becomes form. A 256-bit cryptographic seed unfolds into self-contained SVG art, following the visual principles of the I Ching. No IPFS. No servers. Only Ethereum.",',
                 '"creator":"DataSattva",',
                 '"external_url":"https://github.com/DataSattva/hashjing-nft",',
                 '"license":"CC BY-NC 4.0 + Hash Jing Commercial License v1.0",'
