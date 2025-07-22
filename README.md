@@ -214,3 +214,7 @@ Covers:
 • Only NFTs from the official main-net contracts listed above are covered.</sub>
 
 For the full text see [`HASHJING_COMMERCIAL_LICENSE_v1.0.md`](HASHJING_COMMERCIAL_LICENSE_v1.0.md).
+
+## Contacts and Resources
+
+For a detailed list of HashJing contacts and resources, see the page [Contacts and Resources](https://datasattva.github.io/hashjing-res/)
