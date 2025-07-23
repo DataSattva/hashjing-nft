@@ -80,6 +80,20 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         emit AllowlistDisabled();
     }
 
+    /*──────────────────── View helpers ───────────────────*/
+
+    /// @notice Returns true if `account` is on the allow-list.
+    /// @dev Front-end uses this to check the wallet before sending a tx.
+    function isAllowed(address account) external view returns (bool) {
+        return _isAllowed[account];
+    }
+
+    /// @notice Current ether balance of this contract.
+    /// @dev Convenience helper for the front-end.
+    function contractBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
     /*──────────────────────── Mint ──────────────────────────*/
 
     event MintingEnabled();                   
