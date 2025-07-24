@@ -18,7 +18,6 @@ describe("HashJingNFT – basic minting", function () {
     const NFT = await ethers.getContractFactory("HashJingNFT");
     nft = await NFT.deploy(await renderer.getAddress());
   
-    await nft.disableAllowlist();
     await nft.enableMinting();
   });  
 
