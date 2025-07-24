@@ -40,7 +40,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     bool public mintingEnabled = false;  
 
     /*──────────────────────── Events ─────────────────────────*/
-    event HashJingNFT_Deployed(string site, string social);
+    event HashJingNFTDeployed(string site, string social);
     
     /*──────────────────────── Errors msg ─────────────────────────*/
     error SoldOut();  
@@ -61,7 +61,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         _setDefaultRoyalty(payable(msg.sender), 750); // 7.5 %
 
         // first-wave marketing links (explorer bots will display them)
-        emit HashJingNFT_Deployed(
+        emit HashJingNFTDeployed(
             "https://datasattva.github.io/hashjing-mint",
             "https://x.com/HashJing"
         );
@@ -88,7 +88,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     }
 
     /// @notice Mints a new HashJing NFT to the caller.
-    /// @dev Requires exact payment, allow-list check and supply cap.
+    /// @dev Requires exact payment and respects the 8 192 supply cap.
     function mint() external payable nonReentrant {
         if (!mintingEnabled) revert MintDisabled();
 
