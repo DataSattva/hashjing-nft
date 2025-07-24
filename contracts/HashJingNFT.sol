@@ -38,6 +38,10 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     uint96  public constant MAX_ROYALTY_BPS = 1_000;   // 10 %
 
     bool public mintingEnabled = false;  
+
+    /*──────────────────────── Events ─────────────────────────*/
+    event HashJingNFT_Deployed(string site, string social);
+    
     /*──────────────────────── Errors msg ─────────────────────────*/
     error SoldOut();  
     error WrongMintFee();
@@ -55,6 +59,12 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     {
         renderer = IMandalaRenderer(rendererAddr);
         _setDefaultRoyalty(payable(msg.sender), 750); // 7.5 %
+
+        // first-wave marketing links (explorer bots will display them)
+        emit HashJingNFT_Deployed(
+            "https://datasattva.github.io/hashjing-mint",
+            "https://x.com/HashJing"
+        );
     }
 
     /*──────────────────── View helpers ───────────────────*/
