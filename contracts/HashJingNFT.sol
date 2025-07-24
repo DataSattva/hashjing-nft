@@ -37,17 +37,13 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     uint256 public constant GENESIS_PRICE  = 0.002 ether;
     uint96  public constant MAX_ROYALTY_BPS = 1_000;   // 10 %
 
-    bool public mintingEnabled = false;
-
-    bool public allowlistOnly = true;              // gate – starts as true
-    mapping(address => bool) private _isAllowed;   
+    bool public mintingEnabled = false;  
     /*──────────────────────── Errors msg ─────────────────────────*/
     error SoldOut();  
     error WrongMintFee();
     error MintAlreadyEnabled();
     error MintDisabled(); 
     error NonexistentToken();
-    error NotWhitelisted();
 
     /*──────────────────── Constructor ───────────────────────*/
 
@@ -61,32 +57,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         _setDefaultRoyalty(payable(msg.sender), 750); // 7.5 %
     }
 
-    /*──────────────────────── Admin ─────────────────────────*/
-
-     event AllowlistDisabled();
-
-    /// @notice Bulk-add addresses to the allow-list (may be called many times).
-    function setAllowList(address[] calldata users) external onlyOwner {
-        for (uint256 i; i < users.length; ++i) {
-            _isAllowed[users[i]] = true;
-        }
-    }
-
-    /// @notice Irreversibly opens mint to everyone.
-    /// @dev Can be called only once. After that `allowlistOnly` is permanently false.
-    function disableAllowlist() external onlyOwner {
-        require(allowlistOnly, "Already public");
-        allowlistOnly = false;
-        emit AllowlistDisabled();
-    }
-
     /*──────────────────── View helpers ───────────────────*/
-
-    /// @notice Returns true if `account` is on the allow-list.
-    /// @dev Front-end uses this to check the wallet before sending a tx.
-    function isAllowed(address account) external view returns (bool) {
-        return _isAllowed[account];
-    }
 
     /// @notice Current ether balance of this contract.
     /// @dev Convenience helper for the front-end.
@@ -110,7 +81,6 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     /// @dev Requires exact payment, allow-list check and supply cap.
     function mint() external payable nonReentrant {
         if (!mintingEnabled) revert MintDisabled();
-        if (allowlistOnly && !_isAllowed[msg.sender]) revert NotWhitelisted();
 
         uint256 id = _nextId;
         if (id > GENESIS_SUPPLY) revert SoldOut();
