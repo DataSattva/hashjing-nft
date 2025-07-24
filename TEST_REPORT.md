@@ -43,8 +43,6 @@ The following unit tests verify basic minting functionality, supply limits, meta
 
 Total deployment cost: \~4.3M gas — safely below block limit.
 
----
-
 ## 2. Trait Distribution
 
 [scripts/collectionStats.ts](https://github.com/DataSattva/hashjing-nft/blob/main/scripts/collectionStats.ts)
@@ -130,7 +128,6 @@ Passages distribution:
 
 ⏱ total time: 178m46s
 ```
----
 
 ## Summary
 
@@ -138,4 +135,8 @@ Passages distribution:
 * Balanced ≈ 5% across full collection
 * `Passages` distribution peaks at 4–6, tails at 0 and 11
 * Total execution time (full mint + decode): \~3 hours on 4-core VPS with 16 GB RAM
+
+## Contacts and Resources
+
+For a detailed list of HashJing contacts and resources, see the page [Contacts and Resources](https://datasattva.github.io/hashjing-res/)
 
