@@ -4,8 +4,6 @@ Smart-contract suite for **fully on-chain** minting and rendering of [HashJing](
 
 Each token holds a **256-bit seed** that is deterministically transformed into an SVG mandala directly inside the EVM—no IPFS, no off-chain servers.
 
----
-
 ## Key Features
 
 | Feature                           | Why it matters                                                                                                                                                                     |
@@ -17,8 +15,6 @@ Each token holds a **256-bit seed** that is deterministically transformed into a
 | **Deterministic entropy**         | Seeds are derived from `keccak256(blockhash + prevrandao + address(this) + id + minter)`, guaranteeing uniqueness without oracles.                                                 |
 | **Two on-chain traits**           | `Balanced` (128 white sectors) and `Passages` (open corridors) are calculated per mint and stored in metadata.                                                                     |
 | **ERC-2981 royalties – 7.5 %**    | Signalled on-chain; marketplaces that support ERC-2981 automatically route **7.5 %** of secondary-sale value (hard-capped at **10 %**) to the creator address set in the contract. |
-
----
 
 ### Ownership & Administrative Controls
 
@@ -32,8 +28,6 @@ Each token holds a **256-bit seed** that is deterministically transformed into a
 
   After that, no one will ever be able to change royalties, price, or withdraw funds.
 * **No `burn()` function.** HashJing treats every mandala as a page in a “Book of Random Entropy”; even seemingly unremarkable hashes may become valuable for future experiments, so tokens are deliberately non-destructible.
-
----
 
 ### Why exactly 8 192 Genesis tokens?
 
@@ -57,8 +51,6 @@ Cumulative probability
 Thus **8 192** (`0x2000`) balances scarcity with excitement: collectors almost surely encounter at least one Sealed piece while a sliver of randomness keeps the lore alive.
 
 > **Note** Minting stops permanently once token #8 192 is issued; any future evolutions of HashJing will deploy under a separate contract.
-
----
 
 ## Project Layout
 
@@ -85,8 +77,6 @@ Thus **8 192** (`0x2000`) balances scarcity with excitement: collectors almost s
 
 > **Note** `FullMandalaRenderer.sol` is a separate stateless contract so it can be audited and optimised independently of the NFT minting logic.
 
----
-
 ## Traits Explained
 
 | Trait        | Type   | Range / Values    | On‑chain? | Notes                                                                                  |
@@ -96,8 +86,6 @@ Thus **8 192** (`0x2000`) balances scarcity with excitement: collectors almost s
 | **Seed**     | String | `0x…` 32‑byte hex | `yes`         | Raw entropy value, exposed for researchers and analytics.                              |
 
 All other potential rarity analytics (symmetries, palindromes, etc.) are left to off‑chain explorers to keep on‑chain gas low.
-
----
 
 ## Entropy Generation
 
@@ -144,8 +132,6 @@ Overall, any attempt to bias the seed costs *more* than the potential gain, whic
 
 For art that values on-chain purity and instant reveal, the deterministic mix above strikes the right balance between unpredictability, simplicity, and cost-efficiency.
 
----
-
 ## Why your wallet thumbnail might look empty — and why that’s perfectly normal
 
 HashJing stores **everything** (JSON *and* SVG) directly inside the smart contract and serves it as a single  
@@ -162,8 +148,6 @@ went offline or an IPFS pin was lost. Immutability, perpetual availability, and 
 part of the art itself”** outweigh the convenience of a thumbnail everywhere. A blank square in one wallet is  
 simply a reminder that your piece lives entirely on-chain.
 
----
-
 ## Royalties
 
 * **Standard:** ERC-2981. Marketplace pays the creator address returned by `royaltyInfo()`.
@@ -171,8 +155,6 @@ simply a reminder that your piece lives entirely on-chain.
 * **Upper bound:** hard-capped at **10 %** to protect collectors.
 * **Governance:** only the contract owner can change the receiver or percentage; any adjustment will be announced publicly on [@DataSattva](https://x.com/DataSattva).
 * **Enforcement:** platforms that ignore ERC-2981 rely on the buyer’s choice to honour the fee.
-
----
 
 ## About the Project
 
@@ -182,8 +164,6 @@ HashJing explores *symbolic geometry* and *cryptographic entropy*. The mandala l
 **Smart‑contract engineering:** community‑driven
 
 The full concept, white‑paper and Python notebooks live in the parent repo: [https://github.com/DataSattva/hashjing](https://github.com/DataSattva/hashjing)
-
----
 
 ## Test Report
 
@@ -196,13 +176,14 @@ Covers:
 * full-collection trait analysis (`Balanced`, `Passages`)
 * gas usage per method
 
----
+## Community & Support
 
-## Contacts and Resources
+[![Join the discussion](https://img.shields.io/github/discussions/DataSattva/hashjing?logo=github)](https://github.com/DataSattva/hashjing/discussions)
 
-For a detailed list of HashJing contacts and resources, see the page [Contacts and Resources](https://datasattva.github.io/hashjing-res/)
+Questions, ideas or bug reports?  
+Open a thread in [**HashJing Discussions**](https://github.com/DataSattva/hashjing/discussions) and let’s talk!
 
----
+For a detailed list of HashJing contacts and resources, see the page [**Contacts and Resources**](https://datasattva.github.io/hashjing-res/).
 
 ## Licences
 

@@ -136,7 +136,12 @@ Passages distribution:
 * `Passages` distribution peaks at 4–6, tails at 0 and 11
 * Total execution time (full mint + decode): \~3 hours on 4-core VPS with 16 GB RAM
 
-## Contacts and Resources
+## Community & Support
 
-For a detailed list of HashJing contacts and resources, see the page [Contacts and Resources](https://datasattva.github.io/hashjing-res/)
+[![Join the discussion](https://img.shields.io/github/discussions/DataSattva/hashjing?logo=github)](https://github.com/DataSattva/hashjing/discussions)
+
+Questions, ideas or bug reports?  
+Open a thread in [**HashJing Discussions**](https://github.com/DataSattva/hashjing/discussions) and let’s talk!
+
+For a detailed list of HashJing contacts and resources, see the page [**Contacts and Resources**](https://datasattva.github.io/hashjing-res/).
 
