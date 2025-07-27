@@ -145,7 +145,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         uint8 passages = _countPassages(seed);
 
         string memory attrs = string.concat(
-            '{ "trait_type":"Balanced", "value":"', balanced ? "true" : "false", '" },',
+            '{ "trait_type":"Balanced", "value":"', balanced ? "Yes" : "No", '" },',
             '{ "trait_type":"Passages", "value":"', Strings.toString(passages), '" },',
             '{ "trait_type":"Source hash", "value":"', Strings.toHexString(uint256(seed), 32), '" }'
         );
