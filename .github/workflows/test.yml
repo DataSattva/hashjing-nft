@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 20
 
-      # кэш npm-пакетов, чтобы сборки шли быстрее
+      # cash npm-packeges
       - uses: actions/cache@v3
         with:
           path: ~/.npm
