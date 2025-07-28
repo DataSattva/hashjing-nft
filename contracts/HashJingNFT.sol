@@ -164,11 +164,30 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         return string.concat("data:application/json;base64,", json);
     }
 
+    /*───────────────────── Helpers ─────────────────────────*/
+
     function totalSupply() external view returns (uint256) {
         return _nextId - 1;
     }
 
-    /*───────────────────── Helpers ─────────────────────────*/
+    /**
+    * @notice Returns all token IDs owned by `owner`.
+    * @dev O(totalSupply), но при 8192 токенах вызов ≤ 50 мс на RPC.
+    */
+    function tokensOfOwner(address owner)
+        external
+        view
+        returns (uint256[] memory)
+    {
+        uint256 balance = balanceOf(owner);
+        uint256[] memory ids = new uint256[](balance);
+        uint256 count;
+        for (uint256 id = 1; id < _nextId; ++id) {
+            if (_ownerOf(id) == owner) ids[count++] = id;
+            if (count == balance) break;      // всё найдено
+        }
+        return ids;
+    }
 
     /// @dev Checks if a token exists (minted and not burned).
     /// @param id Token ID to check.
