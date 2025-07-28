@@ -4162,7 +4162,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
 
     /**
     * @notice Returns all token IDs owned by `owner`.
-    * @dev O(totalSupply), но при 8192 токенах вызов ≤ 50 мс на RPC.
+    * @dev Iterates over all minted tokens. Efficient up to 8192 tokens (~50ms on RPC).
     */
     function tokensOfOwner(address owner)
         external
@@ -4174,7 +4174,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         uint256 count;
         for (uint256 id = 1; id < _nextId; ++id) {
             if (_ownerOf(id) == owner) ids[count++] = id;
-            if (count == balance) break;      // всё найдено
+            if (count == balance) break;  
         }
         return ids;
     }
