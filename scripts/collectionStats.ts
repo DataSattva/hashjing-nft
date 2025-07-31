@@ -31,7 +31,6 @@ async function main() {
 
   // ─── analyse metadata ───
   const total = Number(await nft.totalSupply());
-  let perfectlyEven = 0;                       // Evenness == "1.0"
   const evenBuckets: Record<string, number> = {};
   const passages:    Record<number, number> = {};
 
@@ -53,8 +52,6 @@ async function main() {
 
   // ─── output ───
   console.log(`\nTokens minted        : ${total}`);
-  console.log(`Evenness = 1.0       : ${perfectlyEven} (${(perfectlyEven / total * 100).toFixed(2)} %)`);
-
   console.log("\nEvenness distribution:");
   Object.keys(evenBuckets)
     .sort((a, b) => parseFloat(a) - parseFloat(b))
