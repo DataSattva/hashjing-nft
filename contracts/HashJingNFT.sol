@@ -6,7 +6,7 @@ pragma solidity ^0.8.25;
  * @author DataSattva
  * @notice Fully on-chain generative art: each token stores a 256-bit seed and deterministically
  *         renders an SVG mandala.  Two traits are derived on-chain:
- *           • Evenness  – balance of 1-bits vs 0-bits (0.0 – 1.0, step 0.1)
+ *           • Evenness – balance of 1-bits (0.00 – 1.00, step 0.01)
  *           • Passages  – number of corridors from center to edge in a 4 × 64 grid.
  * @dev    Based on OpenZeppelin ERC721, ERC2981, Ownable. Metadata & SVG are base64 data-URIs.
  * @custom:license-art CC BY-NC 4.0 + Hash Jing Commercial License v1.0
@@ -31,7 +31,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     /*──────────────────── State ────────────────────*/
     IMandalaRenderer public immutable renderer;                // external SVG generator
     mapping(uint256 => bytes32) private _seed;                 // tokenId → 256-bit seed
-    mapping(uint256 => uint8)   public  evenness;              // tokenId → 0-10 score
+    mapping(uint256 => uint8) public evenness;  // 0-100 score (label 0.00-1.00)
 
     uint256 private _nextId = 1;                               // 1-based incremental ID
 
@@ -156,7 +156,7 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         string memory json = Base64.encode(
             abi.encodePacked(
                 '{"name":"HashJing #', id.toString(), '",',
-                '"description":"HashJing is a fully on-chain mandala: entropy becomes form via deterministic SVG.",',
+                '"description":"HashJing is a fully on-chain mandala: a deterministic glyph where entropy becomes form. A 256-bit cryptographic seed unfolds into self-contained SVG art, following the visual principles of the I Ching. No IPFS. No servers. Only Ethereum.",',
                 '"creator":"DataSattva",',
                 '"external_url":"https://github.com/DataSattva/hashjing-nft",',
                 '"license":"CC BY-NC 4.0 + Hash Jing Commercial License v1.0",',
@@ -212,9 +212,12 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
 
     /*──────── Evenness ────────*/
 
-    /// @dev Converts score 0-10 → label "0.0" … "1.0".
-    function _evennessLabel(uint8 score) internal pure returns (string memory) {
-        return score == 10 ? "1.0" : string.concat("0.", Strings.toString(score));
+    /// @dev Converts score 0-100 → label "0.00" … "1.00".
+    function _evennessLabel(uint8 s) internal pure returns (string memory) {
+        if (s == 100) return "1.00";                     // perfect balance: 128 ones, 128 zeros
+        if (s < 10)  return string.concat("0.0", Strings.toString(s)); // 0-9  → 0.0x
+        // 10–99 → 0.xx
+        return string.concat("0.", Strings.toString(s));             
     }
 
     /// @dev Brian Kernighan popcount for uint256.
@@ -223,18 +226,23 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Computes Evenness score (0-10) and stores it once at mint.
-     * @param id   Token ID being minted.
-     * @param seed 256-bit seed of the token.
-     *
-     *      score = floor( (128-|ones-128|) * 10 / 128 )
-     *      only perfectly balanced (128 ones) yields 10 → label "1.0"
-     */
+    * @dev Computes Evenness score (0–100) using physical ratio of bits: min/ max.
+    *      score = floor( min(ones, zeros) * 100 / max(ones, zeros) )
+    */
     function _storeEvenness(uint256 id, bytes32 seed) internal {
-        uint256 ones  = _popcount(uint256(seed));           // 0-256
-        uint256 diff  = ones > 128 ? ones - 128 : 128 - ones;
-        uint8 score   = uint8(((128 - diff) * 10) / 128);   // 0-10
-        evenness[id]  = score;
+        uint256 ones  = _popcount(uint256(seed));           // 0–256
+        uint256 zeros = 256 - ones;
+        uint8 score;
+
+        if (ones == 0 || zeros == 0) {
+            score = 0; // to avoid division by zero
+        } else {
+            uint256 minVal = ones < zeros ? ones : zeros;
+            uint256 maxVal = ones > zeros ? ones : zeros;
+            score = uint8((minVal * 100) / maxVal);         // 0–100
+        }
+
+        evenness[id] = score;
     }
 
     /*──────── Passages (flood-fill on 4×64 grid) ────────*/
