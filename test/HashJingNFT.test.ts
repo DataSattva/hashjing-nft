@@ -45,7 +45,11 @@ describe("HashJingNFT – basic minting", function () {
     const uri  = await nft.tokenURI(1n);
     const json = JSON.parse(Buffer.from(uri.split(",")[1], "base64").toString());
     const traits = json.attributes.map((a: any) => a.trait_type);
-    expect(traits).to.include.members(["Balanced", "Passages"]);
+    expect(traits).to.include.members(["Evenness", "Passages"]);
+
+    // optional: убедиться, что Evenness строка ∈ ["0.0"…"1.0"]
+    const evenVal = json.attributes.find((a: any) => a.trait_type === "Evenness").value;
+    expect(/^(0\.[0-9]|1\.0)$/.test(evenVal)).to.be.true;
   });
 
   it("supports ERC165: ERC721, Metadata, ERC2981", async () => {
