@@ -2,15 +2,15 @@
 pragma solidity ^0.8.25;
 
 /**
- * @title HashJingNFT – Fully On-Chain Generative Mandalas
+ * @title  HashJingNFT – Fully On-Chain Generative Mandalas
  * @author DataSattva
- * @notice This contract implements a fully on-chain NFT collection where each token encodes a
- *         256-bit seed and renders a deterministic SVG mandala. Traits like `Balanced` and
- *         `Passages` are derived directly from the hash.
- * @dev Uses OpenZeppelin ERC721, ERC2981, Ownable. Royalty info is encoded via ERC2981.
- *      Metadata and SVG image are inlined as data-URIs and stored entirely on-chain.
+ * @notice Fully on-chain generative art: each token stores a 256-bit seed and deterministically
+ *         renders an SVG mandala.  Two traits are derived on-chain:
+ *           • Evenness  – balance of 1-bits vs 0-bits (0.0 – 1.0, step 0.1)
+ *           • Passages  – number of corridors from center to edge in a 4 × 64 grid.
+ * @dev    Based on OpenZeppelin ERC721, ERC2981, Ownable. Metadata & SVG are base64 data-URIs.
  * @custom:license-art CC BY-NC 4.0 + Hash Jing Commercial License v1.0
- * @custom:source https://github.com/DataSattva/hashjing-nft
+ * @custom:source     https://github.com/DataSattva/hashjing-nft
  */
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -21,74 +21,77 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IMandalaRenderer {
+    /// @notice Returns raw SVG string for a given 256-bit seed.
     function svg(bytes32 hash) external view returns (string memory);
 }
 
 contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
     using Strings for uint256;
 
-    /*──────────────────────── State ─────────────────────────*/
-    IMandalaRenderer public immutable renderer;
-    mapping(uint256 => bytes32) private _seed;
+    /*──────────────────── State ────────────────────*/
+    IMandalaRenderer public immutable renderer;                // external SVG generator
+    mapping(uint256 => bytes32) private _seed;                 // tokenId → 256-bit seed
+    mapping(uint256 => uint8)   public  evenness;              // tokenId → 0-10 score
 
-    uint256 private _nextId = 1;
+    uint256 private _nextId = 1;                               // 1-based incremental ID
 
     uint256 public constant GENESIS_SUPPLY = 8_192;
     uint256 public constant GENESIS_PRICE  = 0.002 ether;
-    uint96  public constant MAX_ROYALTY_BPS = 1_000;   // 10 %
+    uint96  public constant MAX_ROYALTY_BPS = 1_000;           // 10 %
 
-    bool public mintingEnabled = false;  
+    bool public mintingEnabled = false;                        // one-way switch
 
-    /*──────────────────────── Events ─────────────────────────*/
+    /*──────────────────── Events ───────────────────*/
     event HashJingNFTDeployed(string site, string social);
-    
-    /*──────────────────────── Errors msg ─────────────────────────*/
-    error SoldOut();  
+    event MintingEnabled();
+
+    /*──────────────────── Errors ───────────────────*/
+    error SoldOut();
     error WrongMintFee();
     error MintAlreadyEnabled();
-    error MintDisabled(); 
+    error MintDisabled();
     error NonexistentToken();
 
-    /*──────────────────── Constructor ───────────────────────*/
+    /*──────────── Constructor ────────────*/
 
-    /// @notice Initializes the NFT contract with renderer and default royalty.
-    /// @dev The deployer becomes the initial owner and default royalty receiver.
+    /**
+     * @notice Deploys the collection, sets renderer and default royalty (7.5 %).
+     * @param rendererAddr Address of the on-chain SVG renderer contract.
+     */
     constructor(address rendererAddr)
         ERC721("HashJing", "HJ")
         Ownable(msg.sender)
     {
         renderer = IMandalaRenderer(rendererAddr);
-        _setDefaultRoyalty(payable(msg.sender), 750); // 7.5 %
+        _setDefaultRoyalty(payable(msg.sender), 750); // basis-points
 
-        // first-wave marketing links (explorer bots will display them)
         emit HashJingNFTDeployed(
             "https://datasattva.github.io/hashjing-mint",
             "https://x.com/HashJing"
         );
     }
 
-    /*──────────────────── View helpers ───────────────────*/
+    /*────────── View helpers ──────────*/
 
-    /// @notice Current ether balance of this contract.
-    /// @dev Convenience helper for the front-end.
+    /// @notice Current ether balance held by the contract.
     function contractBalance() external view returns (uint256) {
         return address(this).balance;
     }
 
-    /*──────────────────────── Mint ──────────────────────────*/
+    /*──────────── Minting ────────────*/
 
-    event MintingEnabled();                   
-
-    /// @notice Enables public minting of HashJing NFTs.
-    /// @dev Callable only once and only by the contract owner. Cannot be undone.
+    /// @notice Enables public minting (irreversible).
     function enableMinting() external onlyOwner {
         if (mintingEnabled) revert MintAlreadyEnabled();
         mintingEnabled = true;
         emit MintingEnabled();
     }
 
-    /// @notice Mints a new HashJing NFT to the caller.
-    /// @dev Requires exact payment and respects the 8 192 supply cap.
+    /**
+     * @notice Mints one NFT to the caller.
+     * @dev    Requires exact `GENESIS_PRICE` and respects the 8 192 supply cap.
+     *         Stores seed & evenness, then calls `_safeMint`.
+     */
     function mint() external payable nonReentrant {
         if (!mintingEnabled) revert MintDisabled();
 
@@ -98,54 +101,54 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
 
         _nextId = id + 1;
         _seed[id] = _generateSeed(id);
+        _storeEvenness(id, _seed[id]);
         _safeMint(msg.sender, id);
     }
 
-    /*────────────────────── Withdraw ───────────────────────*/
+    /*────────── Withdraw ───────────*/
 
-    /// @notice Sends the entire contract balance to the owner.
-    /// @dev Callable only by the contract owner.
+    /// @notice Transfers entire contract balance to the owner.
     function withdraw() external onlyOwner {
         (bool ok, ) = msg.sender.call{value: address(this).balance}("");
         require(ok, "Withdraw failed");
     }
 
-    /*────────────── Ownership ─ renounce permanently disabled ──────────────*/
+    /*──────── Ownership guard ────────*/
 
-    /// @notice Disables renouncing ownership to prevent accidental lockout.
-    /// @dev Overrides OpenZeppelin `Ownable` behavior.
+    /// @dev Prevent accidental lock-out by disallowing renounce.
     function renounceOwnership() public pure override {
-    revert("renounceOwnership is disabled");
+        revert("renounceOwnership is disabled");
     }
 
-    /*────────────── Royalty management ──────────────*/
+    /*──────── Royalty ─────────*/
 
-    /// @notice Updates royalty recipient and fee.
-    /// @dev Only callable by the contract owner. Enforces max fee of 10%.
-    /// @param receiver Address to receive royalties.
-    /// @param feeBps Royalty fee in basis points (e.g., 750 = 7.5%).
+    /**
+     * @notice Updates royalty receiver & fee (capped at 10 %).
+     * @param receiver Address that will receive royalties.
+     * @param feeBps   Royalty in basis points.
+     */
     function setRoyalty(address receiver, uint96 feeBps) external onlyOwner {
         require(feeBps <= MAX_ROYALTY_BPS, "Max 10%");
         _setDefaultRoyalty(receiver, feeBps);
     }
 
-    /*────────────────────── Metadata ───────────────────────*/
+    /*────────── Metadata ──────────*/
 
-    /// @notice Returns base64-encoded metadata for a given token.
-    /// @dev Metadata includes SVG image and fully on-chain traits.
-    /// @param id Token ID to query.
-    /// @return A base64-encoded data URI JSON string.
+    /**
+     * @notice Returns base64-encoded JSON with SVG image and on-chain traits.
+     * @param id Token ID to query.
+     */
     function tokenURI(uint256 id) public view override returns (string memory) {
         if (!_existsLocal(id)) revert NonexistentToken();
 
         bytes32 seed = _seed[id];
         string memory image = Base64.encode(bytes(renderer.svg(seed)));
 
-        bool  balanced = _isBalanced(seed);
+        uint8 even     = evenness[id];
         uint8 passages = _countPassages(seed);
 
         string memory attrs = string.concat(
-            '{ "trait_type":"Balanced", "value":"', balanced ? "Yes" : "No", '" },',
+            '{ "trait_type":"Evenness", "value":"', _evennessLabel(even), '" },',
             '{ "trait_type":"Passages", "value":"', Strings.toString(passages), '" },',
             '{ "trait_type":"Source hash", "value":"', Strings.toHexString(uint256(seed), 32), '" }'
         );
@@ -153,93 +156,90 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         string memory json = Base64.encode(
             abi.encodePacked(
                 '{"name":"HashJing #', id.toString(), '",',
-                '"description":"HashJing is a fully on-chain mandala: a deterministic glyph where entropy becomes form. A 256-bit cryptographic seed unfolds into self-contained SVG art, following the visual principles of the I Ching. No IPFS. No servers. Only Ethereum.",',
+                '"description":"HashJing is a fully on-chain mandala: entropy becomes form via deterministic SVG.",',
                 '"creator":"DataSattva",',
                 '"external_url":"https://github.com/DataSattva/hashjing-nft",',
-                '"license":"CC BY-NC 4.0 + Hash Jing Commercial License v1.0",'
+                '"license":"CC BY-NC 4.0 + Hash Jing Commercial License v1.0",',
                 '"image":"data:image/svg+xml;base64,', image, '",',
-                '"attributes":[', attrs, ']}'
-            )
+                '"attributes":[', attrs, ']}' )
         );
         return string.concat("data:application/json;base64,", json);
     }
 
-    /*───────────────────── Helpers ─────────────────────────*/
+    /*────────── Helpers ──────────*/
 
+    /**
+     * @notice Returns total number of minted tokens.
+     * @dev    `totalSupply()` = _nextId-1 (no burn support).
+     */
     function totalSupply() external view returns (uint256) {
         return _nextId - 1;
     }
 
     /**
-    * @notice Returns all token IDs owned by `owner`.
-    * @dev Iterates over all minted tokens. Efficient up to 8192 tokens (~50ms on RPC).
-    */
-    function tokensOfOwner(address owner)
-        external
-        view
-        returns (uint256[] memory)
-    {
+     * @notice Returns all token IDs owned by `owner`.
+     * @dev    Linear scan; efficient up to 8 192 tokens (~50 ms on RPC).
+     */
+    function tokensOfOwner(address owner) external view returns (uint256[] memory) {
         uint256 balance = balanceOf(owner);
         uint256[] memory ids = new uint256[](balance);
         uint256 count;
         for (uint256 id = 1; id < _nextId; ++id) {
             if (_ownerOf(id) == owner) ids[count++] = id;
-            if (count == balance) break;  
+            if (count == balance) break;
         }
         return ids;
     }
 
-    /// @dev Checks if a token exists (minted and not burned).
-    /// @param id Token ID to check.
-    /// @return True if token exists.
+    /*──────── Seed / existence ───────*/
+
     function _existsLocal(uint256 id) internal view returns (bool) {
         return id != 0 && id < _nextId && _ownerOf(id) != address(0);
     }
 
-    /// @dev Generates a 256-bit pseudo-random seed for a given tokenId.
-    ///      The mix is fully on-chain and does not rely on external oracles.
-    /// @param id Token ID used as part of the entropy mix.
-    /// @return 32-byte seed unique to this mint.
+    /// @dev Pseudo-random seed: blockhash + prevrandao + contract & sender salt.
     function _generateSeed(uint256 id) internal view returns (bytes32) {
         return keccak256(
             abi.encodePacked(
-                blockhash(block.number - 1),   // fixed hash of the previous block (validator cannot modify)
-                block.prevrandao,              // post-Merge randomness beacon revealed only when the block is sealed
-                address(this),                 // contract address as deploy-time salt (prevents pre-compute rainbow tables)
-                id,                            // tokenId guarantees per-token uniqueness
-                msg.sender                     // ties entropy to the minter’s address
+                blockhash(block.number - 1),
+                block.prevrandao,
+                address(this),
+                id,
+                msg.sender
             )
         );
     }
 
-    /*──────── Balanced (exactly 128 ones) ────────*/
+    /*──────── Evenness ────────*/
 
-    /// @dev Determines if the 256-bit seed has exactly 128 one-bits.
-    /// @param hash The 32-byte seed to analyze.
-    /// @return True if the seed is perfectly balanced.
-    function _isBalanced(bytes32 hash) internal pure returns (bool) {
-        uint256 ones;
-        for (uint256 i = 0; i < 32; ++i) {
-            ones += _countOnes(uint8(hash[i]));
-        }
-        return ones == 128;
+    /// @dev Converts score 0-10 → label "0.0" … "1.0".
+    function _evennessLabel(uint8 score) internal pure returns (string memory) {
+        return score == 10 ? "1.0" : string.concat("0.", Strings.toString(score));
     }
 
-    /// @dev Counts the number of one-bits in a byte.
-    /// @param b Input byte.
-    /// @return c Number of set bits in the byte.
-    function _countOnes(uint8 b) internal pure returns (uint8 c) {
-        while (b != 0) {
-            c += b & 1;
-            b >>= 1;
-        }
+    /// @dev Brian Kernighan popcount for uint256.
+    function _popcount(uint256 x) internal pure returns (uint256 c) {
+        unchecked { while (x != 0) { x &= x - 1; c++; } }
     }
 
-    /*──────── Passages (flood-fill on 4 × 64 grid) ─────────*/
+    /**
+     * @dev Computes Evenness score (0-10) and stores it once at mint.
+     * @param id   Token ID being minted.
+     * @param seed 256-bit seed of the token.
+     *
+     *      score = floor( (128-|ones-128|) * 10 / 128 )
+     *      only perfectly balanced (128 ones) yields 10 → label "1.0"
+     */
+    function _storeEvenness(uint256 id, bytes32 seed) internal {
+        uint256 ones  = _popcount(uint256(seed));           // 0-256
+        uint256 diff  = ones > 128 ? ones - 128 : 128 - ones;
+        uint8 score   = uint8(((128 - diff) * 10) / 128);   // 0-10
+        evenness[id]  = score;
+    }
 
-    /// @dev Converts a 256-bit hash into a 4×64 binary grid for flood-fill.
-    /// @param hash The seed to convert.
-    /// @return grid A binary matrix representing the mandala sectors.
+    /*──────── Passages (flood-fill on 4×64 grid) ────────*/
+
+    /// @dev Maps 256-bit seed into 4 × 64 binary grid for flood-fill traversal.
     function _toBitGrid(bytes32 hash) internal pure returns (uint8[64][4] memory grid) {
         for (uint256 i = 0; i < 32; ++i) {
             uint8 hi = uint8(hash[i]) >> 4;
@@ -252,9 +252,10 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         return grid;
     }
 
-    /// @dev Counts the number of unbroken paths (passages) from center to edge.
-    /// @param hash The seed used to build the grid.
-    /// @return Number of traversable corridors in the mandala.
+    /**
+     * @dev Returns number of corridors connecting center (row 0) to edge (row 3).
+     * @param hash 256-bit seed.
+     */
     function _countPassages(bytes32 hash) internal pure returns (uint8) {
         uint8[64][4] memory grid = _toBitGrid(hash);
         bool[64][4] memory visited;
@@ -275,18 +276,10 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         return passages;
     }
 
-    /*──────── BFS helpers ────────*/
-
-    /// @dev Enqueues a cell for BFS traversal if it's a valid empty tile.
-    /// @param grid Binary occupancy map.
-    /// @param vis Global visited matrix.
-    /// @param loc Local visited matrix.
-    /// @param qr BFS row queue.
-    /// @param qc BFS column queue.
-    /// @param nr Row index to enqueue.
-    /// @param nc Column index to enqueue.
-    /// @param tail Current queue tail index.
-    /// @return Updated tail index.
+    /**
+     * @dev BFS queue helper — enqueue cell if empty and unvisited.
+     * @return New tail index.
+     */
     function _maybeEnqueue(
         uint8[64][4] memory grid,
         bool[64][4]  memory vis,
@@ -304,12 +297,10 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         return tail + 1;
     }
 
-    /// @dev Runs BFS from a sector in the first row to detect passage to edge.
-    /// @param grid The mandala grid.
-    /// @param vis Global visited matrix (to avoid recounting).
-    /// @param loc Local visited state for current run.
-    /// @param startSector Column index in row 0 to start from.
-    /// @return reached True if there's a path to row 3 (edge).
+    /**
+     * @dev Breadth-first search from top row, sector `startSector`.
+     * @return reached True if any path reaches outer row.
+     */
     function _bfs(
         uint8[64][4] memory grid,
         bool[64][4]  memory vis,
@@ -320,31 +311,32 @@ contract HashJingNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         uint16[256] memory qc;
         uint256 head;
         uint256 tail;
+
         qr[0] = 0;
         qc[0] = startSector;
-        tail = 1;
+        tail  = 1;
 
         while (head < tail) {
             uint16 r = qr[head];
             uint16 c = qc[head];
             head++;
+
             if (loc[r][c] || grid[r][c] != 0) continue;
             loc[r][c] = true;
             if (r == 3) reached = true;
 
             uint16[4] memory nr = [r + 1, r == 0 ? 0 : r - 1, r, r];
             uint16[4] memory nc = [c, c, (c + 1) % 64, (c + 63) % 64];
+
             for (uint8 i = 0; i < 4; ++i) {
                 tail = _maybeEnqueue(grid, vis, loc, qr, qc, nr[i], nc[i], tail);
             }
         }
-        return reached;
     }
 
-    /*────────── ERC-165 support ──────────*/
-    /// @notice Returns true if this contract implements a given interface.
-    /// @dev Supports ERC721 and ERC2981.
+    /*───────── ERC-165 ─────────*/
 
+    /// @inheritdoc IERC165
     function supportsInterface(bytes4 iid)
         public
         view
