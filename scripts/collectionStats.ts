@@ -1,20 +1,11 @@
 // scripts/collectionStats.ts
-//
-// Quick local‐chain census:
-// 1) deploy HashCanon stack (SVGStorage → Renderer → NFT)
-// 2) mint the entire Genesis supply
-// 3) print distributions for Evenness, Passages, Crown
-//
-// Run with:  npx hardhat run scripts/collectionStats.ts
-// ────────────────────────────────────────────────────────────────────────────
-
 import { ethers } from "hardhat";
 import { HashCanonNFT } from "../typechain-types";
 
 async function main() {
   const [owner] = await ethers.getSigners();
 
-  /* ───────────── deploy local stack ───────────── */
+  // ─── deploy local test stack ───
   const Storage   = await ethers.getContractFactory("HashCanonSVGStorage");
   const storage   = await Storage.deploy();
 
@@ -22,27 +13,28 @@ async function main() {
   const renderer  = await Renderer.deploy(await storage.getAddress());
 
   const NFT       = await ethers.getContractFactory("HashCanonNFT");
-  const nft       = (await NFT.deploy(await renderer.getAddress())) as HashCanonNFT;
+  const nft = (await NFT.deploy(await renderer.getAddress())) as HashCanonNFT;
 
   await nft.connect(owner).enableMinting();
 
-  /* ───────────── bulk-mint Genesis ───────────── */
-  const PRICE     = ethers.parseEther("0.002");
-  const GENESIS   = Number(await nft.GENESIS_SUPPLY());
-  const BATCH     = 500;                           // mine every 500 mints
+  const PRICE   = ethers.parseEther("0.002");
+  const GENESIS = Number(await nft.GENESIS_SUPPLY());
 
+  // ─── bulk-mint all 8192 tokens ───
   console.time("mint-all");
+  const BATCH = 500;
   for (let i = 0; i < GENESIS; i++) {
     await nft.connect(owner).mint({ value: PRICE });
     if ((i + 1) % BATCH === 0) await ethers.provider.send("evm_mine");
   }
   console.timeEnd("mint-all");
 
-  /* ───────────── analyse metadata ───────────── */
-  const total          = Number(await nft.totalSupply());
-  const evenBuckets:   Record<string, number> = {};
-  const passages:      Record<number, number> = {};
-  const crowns:        Record<string, number> = {};
+  // ─── analyse metadata ───
+  const total = Number(await nft.totalSupply());
+  const evenBuckets: Record<string, number> = {};
+  const passages:    Record<number, number> = {};
+  const crowns:      Record<string, number> = {};
+  let perfectlyEven = 0;
 
   for (let id = 1; id <= total; id++) {
     const uri  = await nft.tokenURI(id);
@@ -52,28 +44,27 @@ async function main() {
       json.attributes.map((a: any) => [a.trait_type, a.value])
     );
 
-    /* Evenness ("0.00" … "1.00") */
-    const ev   = attr.Evenness;
-    evenBuckets[ev] = (evenBuckets[ev] || 0) + 1;
+    const even = attr.Evenness;
+    if (even === "1.0" || even === "1.00") perfectlyEven++;
+    evenBuckets[even] = (evenBuckets[even] || 0) + 1;
 
-    /* Passages (0-32) */
-    const p    = Number(attr.Passages);
+    const p = Number(attr.Passages);
     passages[p] = (passages[p] || 0) + 1;
 
-    /* Crown ("rank:qty" e.g. "4:1") */
-    const cr   = attr.Crown;
-    crowns[cr] = (crowns[cr] || 0) + 1;
+    const cr = attr.Crown;
+    if (cr) crowns[cr] = (crowns[cr] || 0) + 1;
   }
 
-  /* ───────────── output stats ───────────── */
-  console.log(`\nTokens minted : ${total}`);
-
+  // ─── output ───
+  console.log(`\nTokens minted        : ${total}`);
+  console.log(`Evenness = 1.0       : ${perfectlyEven} (${((perfectlyEven / total) * 100).toFixed(2)} %)`);
+  
   console.log("\nEvenness distribution:");
   Object.keys(evenBuckets)
     .sort((a, b) => parseFloat(a) - parseFloat(b))
     .forEach(k =>
       console.log(
-        `  ${k.padEnd(4, " ")} : ${evenBuckets[k]} (${(
+        `  ${k.padEnd(4, " ")}: ${evenBuckets[k]} (${(
           (evenBuckets[k] / total) * 100
         ).toFixed(2)} %)`
       )
@@ -91,7 +82,7 @@ async function main() {
       )
     );
 
-  console.log("\nCrown distribution (rank:qty):");
+  console.log("\nCrown distribution:");
   Object.keys(crowns)
     .sort((a, b) => {
       const [ra, qa] = a.split(":").map(Number);
@@ -100,7 +91,7 @@ async function main() {
     })
     .forEach(k =>
       console.log(
-        `  ${k.padStart(5, " ")} : ${crowns[k]} (${(
+        `  ${k.padStart(5, " ")}: ${crowns[k]} (${(
           (crowns[k] / total) * 100
         ).toFixed(2)} %)`
       )
