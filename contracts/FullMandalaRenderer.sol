@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-import "./HashJingSVGStorage.sol";   // <- renamed storage contract
+import "./HashCanonSVGStorage.sol";   // <- renamed storage contract
 import "@openzeppelin/contracts/utils/Base64.sol";
 
 /**
  * @title FullMandalaRenderer
  * @author DataSattva
  * @notice On-chain renderer: turns a 32-byte seed into a finished SVG string.
- * @dev Uses external SSTORE2 storage (HashJingSVGStorage) for common SVG chunks.
+ * @dev Uses external SSTORE2 storage (HashCanonSVGStorage) for common SVG chunks.
  */
 contract FullMandalaRenderer {
     /* ───── geometry ───── */
@@ -32,11 +32,11 @@ contract FullMandalaRenderer {
     /* ───── external SSTORE2 storage with path-prefixes ───── */
 
     /// @dev Storage for <svg> head, tail, path and text prefixes.
-    HashJingSVGStorage immutable store;
+    HashCanonSVGStorage immutable store;
 
-    /// @param storageAddr Address of the deployed HashJingSVGStorage contract.
+    /// @param storageAddr Address of the deployed HashCanonSVGStorage contract.
     constructor(address storageAddr) {
-        store = HashJingSVGStorage(storageAddr);
+        store = HashCanonSVGStorage(storageAddr);
     }
 
     /**

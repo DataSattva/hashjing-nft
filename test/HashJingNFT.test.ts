@@ -1,21 +1,21 @@
 import { ethers, network } from "hardhat";
 import { expect } from "chai";
-import { HashJingNFT } from "../typechain-types";
+import { HashCanonNFT } from "../typechain-types";
 
-describe("HashJingNFT – basic minting", function () {
+describe("HashCanonNFT – basic minting", function () {
   this.timeout(120_000);                
-  let nft: HashJingNFT;
+  let nft: HashCanonNFT;
   const price = ethers.parseEther("0.002");
 
   /* ---------------- deploy fresh contracts ---------------- */
   beforeEach(async () => {
-    const Storage  = await ethers.getContractFactory("HashJingSVGStorage");
+    const Storage  = await ethers.getContractFactory("HashCanonSVGStorage");
     const storage  = await Storage.deploy();
   
     const Renderer = await ethers.getContractFactory("FullMandalaRenderer");
     const renderer = await Renderer.deploy(await storage.getAddress());
   
-    const NFT = await ethers.getContractFactory("HashJingNFT");
+    const NFT = await ethers.getContractFactory("HashCanonNFT");
     nft = await NFT.deploy(await renderer.getAddress());
   
     await nft.enableMinting();
@@ -38,24 +38,28 @@ describe("HashJingNFT – basic minting", function () {
       .to.be.revertedWithCustomError(nft, "SoldOut");
   });
 
-  it("returns tokenURI with Balanced and Passages traits", async () => {
+  it("returns tokenURI with Balanced, Passages and Crown traits", async () => {
     const [, user] = await ethers.getSigners();
     await nft.connect(user).mint({ value: price });
 
     const uri  = await nft.tokenURI(1n);
     const json = JSON.parse(Buffer.from(uri.split(",")[1], "base64").toString());
     const traits = json.attributes.map((a: any) => a.trait_type);
-    expect(traits).to.include.members(["Evenness", "Passages"]);
+    expect(traits).to.include.members(["Evenness", "Passages", "Crown"]);
 
     // optional: Evenness ∈ ["0.0"…"1.0"]
     const evenVal = json.attributes.find((a: any) => a.trait_type === "Evenness").value;
     expect(/^0\.\d{2}$|^1\.00$/.test(evenVal)).to.be.true;
+
+    const crownVal = json.attributes.find((a: any) => a.trait_type === "Crown").value;
+    expect(/^\d+:\d+$/.test(crownVal)).to.be.true;
   });
 
   it("supports ERC165: ERC721, Metadata, ERC2981", async () => {
     const ids = ["0x80ac58cd", "0x5b5e139f", "0x2a55205a"];
     for (const iid of ids) expect(await nft.supportsInterface(iid)).to.be.true;
   });
+  
 
   it("allows treasury to withdraw contract balance", async () => {
     const [owner, alice] = await ethers.getSigners();
