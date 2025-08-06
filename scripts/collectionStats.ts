@@ -1,5 +1,5 @@
 // scripts/collectionStats.ts
-// old config + canon
+// old config + canon 2
 import { ethers } from "hardhat";
 import { HashCanonNFT } from "../typechain-types";
 
@@ -34,6 +34,7 @@ async function main() {
   const total = Number(await nft.totalSupply());
   const evenBuckets: Record<string, number> = {};
   const passages:    Record<number, number> = {};
+  let perfectlyEven = 0;
 
   for (let id = 1; id <= total; id++) {
     const uri  = await nft.tokenURI(id);
@@ -52,15 +53,17 @@ async function main() {
   }
 
   // ─── output ───
-  console.log(\nTokens minted        : ${total});
+  console.log(`\nTokens minted        : ${total}`);
+  console.log(`Evenness = 1.0       : ${perfectlyEven} (${((perfectlyEven / total) * 100).toFixed(2)} %)`);
+  
   console.log("\nEvenness distribution:");
   Object.keys(evenBuckets)
     .sort((a, b) => parseFloat(a) - parseFloat(b))
     .forEach(k =>
       console.log(
-          ${k.padEnd(4, " ")}: ${evenBuckets[k]} (${(
+        `  ${k.padEnd(4, " ")}: ${evenBuckets[k]} (${(
           (evenBuckets[k] / total) * 100
-        ).toFixed(2)} %)
+        ).toFixed(2)} %)`
       )
     );
 
@@ -70,9 +73,9 @@ async function main() {
     .sort((a, b) => a - b)
     .forEach(k =>
       console.log(
-          ${k.toString().padStart(2, "0")} : ${passages[k]} (${(
+        `  ${k.toString().padStart(2, "0")} : ${passages[k]} (${(
           (passages[k] / total) * 100
-        ).toFixed(2)} %)
+        ).toFixed(2)} %)`
       )
     );
 }
