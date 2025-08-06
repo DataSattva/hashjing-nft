@@ -1,20 +1,20 @@
 // scripts/collectionStats.ts
-// old script
+// old config + canon
 import { ethers } from "hardhat";
-import { HashJingNFT } from "../typechain-types";
+import { HashCanonNFT } from "../typechain-types";
 
 async function main() {
   const [owner] = await ethers.getSigners();
 
   // ─── deploy local test stack ───
-  const Storage   = await ethers.getContractFactory("HashJingSVGStorage");
+  const Storage   = await ethers.getContractFactory("HashCanonSVGStorage");
   const storage   = await Storage.deploy();
 
   const Renderer  = await ethers.getContractFactory("FullMandalaRenderer");
   const renderer  = await Renderer.deploy(await storage.getAddress());
 
-  const NFT       = await ethers.getContractFactory("HashJingNFT");
-  const nft = (await NFT.deploy(await renderer.getAddress())) as HashJingNFT;
+  const NFT       = await ethers.getContractFactory("HashCanonNFT");
+  const nft = (await NFT.deploy(await renderer.getAddress())) as HashCanonNFT;
 
   await nft.connect(owner).enableMinting();
 
