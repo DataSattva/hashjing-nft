@@ -3,11 +3,11 @@ pragma solidity ^0.8.25;
 
 import "./SSTORE2.sol";
 
-/// @title HashJingSVGStorage – Compressed SVG Chunks for On-Chain Mandalas
+/// @title HashCanonSVGStorage – Compressed SVG Chunks for On-Chain Mandalas
 /// @author DataSattva
 /// @notice Stores static SVG fragments (head, tail, rings, text) used by FullMandalaRenderer.
 /// @dev Uses SSTORE2 to optimize gas cost for storing large, reusable SVG segments.
-contract HashJingSVGStorage {
+contract HashCanonSVGStorage {
     
     /* ───────── frame chunks ───────── */
 
