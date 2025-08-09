@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 /**
- * @title   CrownLib — radial-symmetry analyser for HashJing seeds
+ * @title   CrownLib — radial-symmetry analyser for HashCanon seeds
  * @author  DataSattva
  * @notice  Given a 256-bit seed, detects circular palindromes (symmetries) in
  *          the 4 × 64 bit grid and returns the *maximal* rank (length) plus the

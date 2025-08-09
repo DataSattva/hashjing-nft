@@ -1,0 +1,144 @@
+Run log → /home/user/hashjing-nft/logs/run-1754766940761-27129.log
+%s: %s mint-all 20.378s
+DEBUG totalSupply = 8192
+ANALYSE START (limit=8192)
+processed 512/8192
+processed 1024/8192
+processed 1536/8192
+processed 2048/8192
+processed 2560/8192
+processed 3072/8192
+processed 3584/8192
+processed 4096/8192
+processed 4608/8192
+processed 5120/8192
+processed 5632/8192
+processed 6144/8192
+processed 6656/8192
+processed 7168/8192
+processed 7680/8192
+processed 8192/8192
+ANALYSE END
+
+Tokens analysed        : 8192 (of 8192)
+
+Evenness distribution:
+  0.61: 1 (0.01 %)
+  0.64: 1 (0.01 %)
+  0.65: 4 (0.05 %)
+  0.66: 3 (0.04 %)
+  0.67: 5 (0.06 %)
+  0.68: 6 (0.07 %)
+  0.69: 11 (0.13 %)
+  0.70: 9 (0.11 %)
+  0.71: 39 (0.48 %)
+  0.72: 33 (0.40 %)
+  0.74: 47 (0.57 %)
+  0.75: 66 (0.81 %)
+  0.76: 89 (1.09 %)
+  0.77: 115 (1.40 %)
+  0.79: 136 (1.66 %)
+  0.80: 167 (2.04 %)
+  0.81: 242 (2.95 %)
+  0.82: 273 (3.33 %)
+  0.84: 322 (3.93 %)
+  0.85: 370 (4.52 %)
+  0.86: 410 (5.00 %)
+  0.88: 528 (6.45 %)
+  0.89: 577 (7.04 %)
+  0.91: 595 (7.26 %)
+  0.92: 687 (8.39 %)
+  0.93: 708 (8.64 %)
+  0.95: 734 (8.96 %)
+  0.96: 799 (9.75 %)
+  0.98: 812 (9.91 %)
+  1.00: 403 (4.92 %)
+
+Passages distribution:
+  00 : 7 (0.09 %)
+  01 : 66 (0.81 %)
+  02 : 306 (3.74 %)
+  03 : 1063 (12.98 %)
+  04 : 1911 (23.33 %)
+  05 : 2217 (27.06 %)
+  06 : 1607 (19.62 %)
+  07 : 717 (8.75 %)
+  08 : 248 (3.03 %)
+  09 : 43 (0.52 %)
+  10 : 7 (0.09 %)
+
+Crown distribution:
+  2:1 : 11 (0.13 %)
+  2:2 : 15 (0.18 %)
+  2:3 : 13 (0.16 %)
+  2:4 : 24 (0.29 %)
+  2:5 : 16 (0.20 %)
+  2:6 : 11 (0.13 %)
+  2:7 : 3 (0.04 %)
+  2:9 : 1 (0.01 %)
+  3:1 : 438 (5.35 %)
+  3:2 : 792 (9.67 %)
+  3:3 : 1050 (12.82 %)
+  3:4 : 1014 (12.38 %)
+  3:5 : 743 (9.07 %)
+  3:6 : 431 (5.26 %)
+  3:7 : 226 (2.76 %)
+  3:8 : 114 (1.39 %)
+  3:9 : 32 (0.39 %)
+  3:10 : 8 (0.10 %)
+  3:11 : 8 (0.10 %)
+  3:12 : 1 (0.01 %)
+  4:1 : 1190 (14.53 %)
+  4:2 : 128 (1.56 %)
+  4:3 : 13 (0.16 %)
+  5:1 : 1497 (18.27 %)
+  5:2 : 152 (1.86 %)
+  5:3 : 14 (0.17 %)
+  5:4 : 1 (0.01 %)
+  6:1 : 107 (1.31 %)
+  6:2 : 1 (0.01 %)
+  7:1 : 119 (1.45 %)
+  8:1 : 10 (0.12 %)
+  9:1 : 6 (0.07 %)
+  10:1 : 1 (0.01 %)
+  11:1 : 1 (0.01 %)
+    — : 1 (0.01 %)
+
+Crown samples:
+  2:1 → tokenId=148 seed=0x85027e8d5bdab4cb1cfa180f2abbca45142940a80f3c1ab9573eb73d58c205a3
+  2:2 → tokenId=2975 seed=0xa5df99a8ba89f5a39db4a7bf7d09a7b6f54c3147c52d4f6eda65338cfd0b4c6e
+  2:3 → tokenId=264 seed=0xff19f4978a5d94daf214c67b426840679ef39137c5322f588c24012eadba2465
+  2:4 → tokenId=540 seed=0x1863ba08ed65094f71dc665d775e7c243853319276038d1473921c84affcaf94
+  2:5 → tokenId=790 seed=0x40877c86cf298c577cf739bee42a8c753e17ae977b83551d290f6afc7ecb9501
+  2:6 → tokenId=98 seed=0xbe2a3655a8cfbb1f661c713684f274fb25390568b475025e2ffd378ed19611db
+  2:7 → tokenId=2315 seed=0x3e445f78b5a836e0af8cc55ecb41daff2831ea5cd33884a8d2297f6781d23e52
+  2:9 → tokenId=3072 seed=0xfcef8bc3386cc970a775644713e8f7ae2dd90e1fec87724d5988d22fbb1ea03a
+  3:1 → tokenId=4 seed=0x460177a1b87f12b19326d94f339aa58d0b32a9eac1123bd4e97cb19273e2c220
+  3:2 → tokenId=12 seed=0x0ae27be3d17b8c5add42b88ad5a5bded388b034b5ad9a80a755dc5482e94a5d8
+  3:3 → tokenId=3 seed=0xdfce31c36144a7afcd479142ab85d87f487aeaeed8411290dc4183c1ef02bd36
+  3:4 → tokenId=8 seed=0x2ad9c895f02df7ab8bdbc58cbca40e1224a9e2ffee2b03fa7493196a78aa96c6
+  3:5 → tokenId=7 seed=0x975a2096984e1de7acf4f12ec4bd42a85d07ed1d189cdbf6c0f83171534e7be3
+  3:6 → tokenId=19 seed=0x1ac0221c8c2cc0d0e3e8f13100998294530159d77237a88d3c9b11d1f3e4d2af
+  3:7 → tokenId=20 seed=0x2c8c8b0be4ae798d104bc62c906b8dfc82ab13bdeb3737a414015748e80196df
+  3:8 → tokenId=18 seed=0x38c8a6d63b3b93262092e99d68af722bbc9072a62e66c54bf5c323e65080874a
+  3:9 → tokenId=45 seed=0xec71d7fb33840888abafbe41c0e84cd00926a9a98942b029ddbd7dc5377873e9
+  3:10 → tokenId=802 seed=0xbeb1749ef85ada9ecdc84947d61a74dcc055a9bf610121cd2f6c8cb7a777c796
+  3:11 → tokenId=3285 seed=0x97460a09d2ff8f8e812028a1071b259e9399270e2dfd785021edfacdccc44599
+  3:12 → tokenId=5370 seed=0xedfb9ee8e8c72f24e125255b67f7939474134d8329ae996d63928cee8c832121
+  4:1 → tokenId=1 seed=0xc62a1b2c1db035155c96872ee264bb735a88fb6d363f767a1d96b2235c84f323
+  4:2 → tokenId=91 seed=0xe23cf8dbfb1db793aea46b2fc24cc44b4378411413524082daacb24d3650fb77
+  4:3 → tokenId=1066 seed=0xfd2ca17da15436bbbbc05b7163eec2ba086b6adf5cfccf18fa00a1e8ec3b630b
+  5:1 → tokenId=6 seed=0x151c029cc05686ee3f9e4881e2fb6e6f75ba687559d3dd452c2d5375724fdefc
+  5:2 → tokenId=17 seed=0x4e5f959f62c459cc214c60f0c6b23432d1f39fd1734c1e0a2b8233972ad47671
+  5:3 → tokenId=375 seed=0xa8404b0836edbc267508f8abf7e7533e58bf886a6873642465ec83753df828f3
+  5:4 → tokenId=42 seed=0x531ca312425f95b483486206386737668337eae79b1ab8ba8e8aa60e278bf7e6
+  6:1 → tokenId=5 seed=0xebc2916951b32f81ee74a991a87ff785457e06d01ea400435c4bdc4440898c0e
+  6:2 → tokenId=1821 seed=0x267445c11c5775c4612a01d60dba08e60dc46c1ceb7d97cae410bb18dcafa9ce
+  7:1 → tokenId=147 seed=0x753ccc350456933c50783ce25fa5179f71f489609f7fc10dd74d68a3f8ec5a67
+  8:1 → tokenId=810 seed=0x5b79a07abfc1096197484a652f53d3f3d6b037730b1b7f1a3bb42d96ebd7a0f5
+  9:1 → tokenId=282 seed=0xc15fd96fa6b1a499ce00ad38503a71bfb17a4100e1b0e7814d0f79905e6920af
+  10:1 → tokenId=7236 seed=0x7d235cda9682ef1ea0e3485a42d3170813b4944d66d44962c368ae93653420c2
+  11:1 → tokenId=3620 seed=0xf812b21c07fa7f62f28a249e519f62c3fed58790d91c19d09cf8d4e0a8c5fda4
+    — → tokenId=1297 seed=0xa43609f7efc4b9a63cd5b170d30b46c5b723a0ce7265bf81d6e801d946db078c
+
+Run log saved → /home/user/hashjing-nft/logs/run-1754766940761-27129.log
