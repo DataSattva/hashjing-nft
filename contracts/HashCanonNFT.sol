@@ -226,13 +226,13 @@ contract HashCanonNFT is ERC721, ERC2981, Ownable, ReentrancyGuard {
         );
     }
 
-    /*──────────────────── Only for test ────────────────────*/
+    /*──────────────────── Only for test ────────────────────
 
     // --- test helper: reveal stored seed (view-only, for diagnostics) ---
     function seedOf(uint256 tokenId) external view returns (bytes32) {
         if (!_existsLocal(tokenId)) revert NonexistentToken();
         return _seed[tokenId];
-    }
+    }*/
 
     /*──────── Evenness ────────*/
 
